@@ -10,12 +10,12 @@ public class VNode { // 定义顶点信息
         this.name = Util.spotNumberToName(number);
     }
 
-    VNode(int number, String name) {
-        this.number = number;
+    VNode(String name) {
         this.name = name;
     }
 
-    VNode(String name) {
+    VNode(int number, String name) {
+        this.number = number;
         this.name = name;
     }
 

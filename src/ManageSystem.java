@@ -34,6 +34,7 @@ public class ManageSystem {
                     manageSystem.AddSpot();
                     break;
                 case 4:
+                    manageSystem.DeleteSpot();
                     break;
                 default:
                     System.out.println("[错误]请重新选择");
@@ -50,6 +51,8 @@ public class ManageSystem {
         System.out.println("2.输出景区景点分布图");
         System.out.println("3.新增景点");
         System.out.println("4.删除景点");
+        System.out.println("=============================");
+        System.out.println("请选择：");
     }
 
     private void CreateGraph() {
@@ -123,9 +126,11 @@ public class ManageSystem {
         if (name1.equals(name2))
             res = 0;
         else {
-            for (ArcNode arc : arcs.get(name1)) {
-                if (arc.getTo().equals(name2))
-                    res = arc.getDistance();
+            if (arcs.get(name1) != null) {
+                for (ArcNode arc : arcs.get(name1)) {
+                    if (arc.getTo().equals(name2))
+                        res = arc.getDistance();
+                }
             }
         }
         return res;
@@ -139,8 +144,13 @@ public class ManageSystem {
     }
 
     private void AddSpot() { // 添加景点
-        System.out.println("请输入景点名称");
+        System.out.println("请输入新增景点名称：");
         Scanner sc = new Scanner(System.in);
-        String name = sc.next
+        String name = sc.next();
+        this.addSpot(spots.size() + 1, name);
+    }
+
+    private void DeleteSpot() {
+        System.out.println("");
     }
 }
