@@ -1,10 +1,13 @@
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.PriorityBlockingQueue;
 
 public class ManageSystem {
     private HashMap<String, List<ArcNode>> arcs;
     private HashMap<String, VNode> spots;
+    private Comparator<VNode> distanceComparator = (o1, o2) -> Integer.compare(o1.getTotalDist() - o2.getTotalDist(), 0); // 距离比较
 
     private ManageSystem() {
         arcs = new HashMap<>();
@@ -43,6 +46,11 @@ public class ManageSystem {
                 case 6:
                     manageSystem.DeleteArc();
                     break;
+                case 7:
+                    manageSystem.ShortestPath();
+                    break;
+                case 8:
+                    manageSystem.CreateTourSortGraph();
                 default:
                     System.out.println("[错误]请重新选择");
                     break;
@@ -60,6 +68,8 @@ public class ManageSystem {
         System.out.println("4.删除景点");
         System.out.println("5.新增路线");
         System.out.println("6.删除路线");
+        System.out.println("7.两景点最短路径与最短距离");
+        System.out.println("8.导游路线图");
         System.out.println("=============================");
         System.out.println("请选择：");
     }
@@ -69,8 +79,6 @@ public class ManageSystem {
         BufferedReader reader;
         try {
             String filePath = "C:\\Users\\舒意恒\\Documents\\GitHub\\scenic_spot_info_manage\\data\\graph.txt";
-            File graphFile = new File(filePath);
-            InputStreamReader inputStreamReader = new InputStreamReader(new FileInputStream(graphFile));
             reader = new BufferedReader(new FileReader(filePath));
             while ((line = reader.readLine()) != null) {
                 String[] edge = line.split("——");
@@ -106,8 +114,8 @@ public class ManageSystem {
         System.out.println();
         for (i = 0; i < spotNames.length; i++) {
             printName(spotNames[i]);
-            for (int j = 0; j < spotNames.length; j++) {
-                int distance = getDistance(spotNames[i], spotNames[j]);
+            for (String spotName : spotNames) {
+                int distance = getDistance(spotNames[i], spotName);
                 String distance_out = String.format("%5d", distance);
                 System.out.print(distance_out + "\t");
             }
@@ -125,11 +133,26 @@ public class ManageSystem {
         }
     }
 
+    /**
+     * @param VNodeName1 景点1
+     * @param VNodeName2 景点2
+     * @return 景点1到景点2的弧
+     */
+    private ArcNode getArc(String VNodeName1, String VNodeName2) {
+        if (arcs.get(VNodeName1).isEmpty())
+            return null;
+        for (ArcNode arcNode : arcs.get(VNodeName1)) {
+            if (arcNode.getTo().equals(VNodeName2))
+                return arcNode;
+        }
+        return null;
+    }
+
     private void deleteArc(String VNodeName1, String VNodeName2) {
         if (arcs.get(VNodeName1).isEmpty()) return;
-        arcs.get(VNodeName1).removeIf(arcNode -> arcNode.to.equals(VNodeName2));
+        arcs.get(VNodeName1).removeIf(arcNode -> arcNode.getTo().equals(VNodeName2));
         if (arcs.get(VNodeName2).isEmpty()) return;
-        arcs.get(VNodeName2).removeIf(arcNode -> arcNode.to.equals(VNodeName1));
+        arcs.get(VNodeName2).removeIf(arcNode -> arcNode.getTo().equals(VNodeName1));
     }
 
     private void addSpot(int number, String VNodeName) {
@@ -198,6 +221,30 @@ public class ManageSystem {
         this.deleteArc(arcStr[0], arcStr[1]);
     }
 
+    private void ShortestPath() {
+        System.out.println("请输入出发景点与到达景点：景点1名称 景点2名称");
+        System.out.println("例如：仙云石 飞流瀑");
+        Scanner sc = new Scanner(System.in);
+        String line = sc.nextLine();
+        String[] arcStr = line.split(" ");
+        Stack<String> shortestPath = new Stack<>();
+        if (arcStr[0].equals(arcStr[1])) {
+            System.out.println("[信息]您输入了同一景点");
+            return;
+        }
+        int shortestDist = this.MiniDistance_Dijkstra(arcStr[0], arcStr[1], shortestPath);
+        System.out.println("最短距离：" + shortestDist);
+        System.out.println("最短路径：");
+        int cnt = 1;
+        System.out.print("1." + shortestPath.pop());
+        while (shortestPath.size() > 1) {
+            String cur = shortestPath.pop();
+            System.out.println(" -> " + cur);
+            System.out.print((++cnt) + "." + cur);
+        }
+        System.out.println(" -> " + shortestPath.pop());
+    }
+
     /**
      * 使用堆优化的Dijkstra算法，求两景点间最短路径和最短距离
      *
@@ -206,12 +253,12 @@ public class ManageSystem {
      * @param path ArcNode逆序入栈，顺序出栈即得到最短路径
      * @return 最短距离
      */
-    private int MiniDistance_Dijkstra(String v1, String v2, Stack<ArcNode> path) {
+    private int MiniDistance_Dijkstra(String v1, String v2, Stack<String> path) {
         if (spots.get(v1) == null || spots.get(v2) == null) {
             throw new IllegalArgumentException("[错误]未找到景点");
         }
 
-        Comparator<VNode> distanceComparator = (o1, o2) -> Integer.compare(o1.getTotalDist() - o2.getTotalDist(), 0); // 距离比较
+
         PriorityBlockingQueue<VNode> candidate = new PriorityBlockingQueue<>(12, distanceComparator);
 
         VNode curSpot = spots.get(v1);
@@ -222,17 +269,17 @@ public class ManageSystem {
             assert curSpot != null;
             if (!curSpot.isVisited()) {
                 for (ArcNode arcNode : arcs.get(curSpot.getName())) {
-                    VNode destSpot = spots.get(arcNode.to);
+                    VNode toSpot = spots.get(arcNode.getTo());
                     int curDist = curSpot.getTotalDist() + arcNode.getDistance();
-                    if (curDist < destSpot.getTotalDist()) {
+                    if (curDist < toSpot.getTotalDist()) {
                         // 更新距离
-                        destSpot.setTotalDist(curDist);
-                        destSpot.setFromSpot(curSpot.getName());
-                        if (!candidate.contains(destSpot))
-                            candidate.add(destSpot);
+                        toSpot.setTotalDist(curDist);
+                        toSpot.setFromSpot(curSpot.getName());
+                        if (!candidate.contains(toSpot))
+                            candidate.add(toSpot);
                         else { // 重新建堆
-                            candidate.remove(destSpot);
-                            candidate.add(destSpot);
+                            candidate.remove(toSpot);
+                            candidate.add(toSpot);
                         }
                     }
                 }
@@ -242,10 +289,53 @@ public class ManageSystem {
             candidate.poll();
         } while (candidate.size() > 0);
 
-        if (spots.get(v2).isVisited()) { // 如果找到最短路径
-            path.push();
+        VNode destSpot = spots.get(v2);
+        if (destSpot.isVisited()) { // 如果找到最短路径
+            path.push(destSpot.getName());
+            String fromSpot = destSpot.getFromSpot(); // 终点的上一个结点
+            while (fromSpot != null) {
+                path.push(fromSpot); // 入栈
+                fromSpot = spots.get(fromSpot).getFromSpot();
+            }
             return spots.get(v2).getTotalDist();
         } else // 如果未找到路径
             return Integer.MAX_VALUE;
+    }
+
+    /**
+     * 最小Hamilton回路作为导游路线图
+     * 1.最小生成树算法找出带权图的一颗以root为根的最小生成树T
+     * 2.前序遍历树T得到顶点表L
+     * 3.将root添加到顶点表L的末尾，按表L中顶点次序组成回路H，作为计算结果
+     *
+     * @param root 最小生成树的根结点
+     */
+    private void createTourSortGraph(String root) {
+        if (spots.get(root) == null)
+            return;
+        List<TreeNode<String>> tree = new ArrayList<>();
+        TreeNode<String> rootNode = new TreeNode<>(root);
+        tree.add(rootNode);
+
+        PriorityBlockingQueue<VNode> candidate = new PriorityBlockingQueue<>(12, distanceComparator);
+        while (tree.size() != spots.size()) {
+            for (TreeNode<String> treeNode : tree) { // 对于树中每个结点
+                if (arcs.get(treeNode.value) != null) {
+                    for (ArcNode arcNode : arcs.get(treeNode.value)) { // 对于结点的每条弧
+                        candidate.add(spots.get(arcNode.getTo()));
+                    }
+                }
+            }
+            // TODO 判断成环
+            // TODO 向生成树添加结点
+        }
+    }
+
+    private void CreateTourSortGraph() {
+        String root;
+        Scanner sc = new Scanner(System.in);
+        root = sc.next();
+        System.out.println("请输入游览起始景点：");
+        createTourSortGraph(root);
     }
 }

@@ -1,4 +1,6 @@
-public class VNode { // 定义顶点信息
+import java.io.Serializable;
+
+public class VNode implements Serializable { // 定义顶点信息
     private int number;                 // 景点编号
     private String name;                // 景点名称
     private String intro;               // 景点简介
@@ -7,7 +9,7 @@ public class VNode { // 定义顶点信息
     // 用于Dijkstra算法的成员变量
     private int totalDist = Integer.MAX_VALUE;
     private boolean visited = false;
-    private String fromSpot;
+    private String fromSpot = null;
 
     VNode(int number) {
         this.number = number;

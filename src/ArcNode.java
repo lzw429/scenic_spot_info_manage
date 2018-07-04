@@ -1,7 +1,9 @@
-public class ArcNode { // 定义边信息
-    String to; // 指向的顶点
-    int distance = 32767; // 景点间距离
-    int time; // 需要的时间
+import java.io.Serializable;
+
+public class ArcNode implements Serializable { // 定义边信息
+    private String to; // 指向的顶点
+    private int distance = 32767; // 景点间距离
+    private int time; // 需要的时间
 
     ArcNode(String to, int distance) {
         this.to = to;
