@@ -1,9 +1,13 @@
 public class VNode { // 定义顶点信息
-    private int number; // 景点编号
-    private String name; // 景点名称
-    private String intro; // 景点简介
-    private boolean hasRestingArea; // 有无休息区
-    private boolean hasLatrine; // 有无公厕
+    private int number;                 // 景点编号
+    private String name;                // 景点名称
+    private String intro;               // 景点简介
+    private boolean hasRestingArea;   // 有无休息区
+    private boolean hasLatrine;        // 有无公厕
+    // 用于Dijkstra算法的成员变量
+    private int totalDist = Integer.MAX_VALUE;
+    private boolean visited = false;
+    private String fromSpot;
 
     VNode(int number) {
         this.number = number;
@@ -57,5 +61,29 @@ public class VNode { // 定义顶点信息
 
     public void setHasLatrine(boolean hasLatrine) {
         this.hasLatrine = hasLatrine;
+    }
+
+    public int getTotalDist() {
+        return totalDist;
+    }
+
+    public void setTotalDist(int totalDist) {
+        this.totalDist = totalDist;
+    }
+
+    public boolean isVisited() {
+        return visited;
+    }
+
+    public void setVisited(boolean visited) {
+        this.visited = visited;
+    }
+
+    public String getFromSpot() {
+        return fromSpot;
+    }
+
+    public void setFromSpot(String fromSpot) {
+        this.fromSpot = fromSpot;
     }
 }
