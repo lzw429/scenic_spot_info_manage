@@ -1,17 +1,29 @@
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.PriorityBlockingQueue;
 
 public class ManageSystem {
     private HashMap<String, List<ArcNode>> arcs;
     private HashMap<String, VNode> spots;
+    private List<Car> cars;
+    private Stack<Car> parkingLot;
+    private Stack<Car> tempParking;
+    private Queue<Car> pavement;
+    private final int parkingNum = 5; // 停车场大小
     private Comparator<VNode> distanceComparator = (o1, o2) -> Integer.compare(o1.getTotalDist() - o2.getTotalDist(), 0); // 距离比较
+    private SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
     private ManageSystem() {
         arcs = new HashMap<>();
         spots = new HashMap<>();
+        cars = new ArrayList<>();
+        parkingLot = new Stack<>();
+        tempParking = new Stack<>();
+        pavement = new LinkedList<>();
     }
 
     public static void main(String[] args) {
@@ -51,6 +63,8 @@ public class ManageSystem {
                     break;
                 case 8:
                     manageSystem.CreateTourSortGraph();
+                case 9:
+                    manageSystem.ParkingLotManage();
                 default:
                     System.out.println("[错误]请重新选择");
                     break;
@@ -70,6 +84,7 @@ public class ManageSystem {
         System.out.println("6.删除路线");
         System.out.println("7.两景点最短路径与最短距离");
         System.out.println("8.导游路线图");
+        System.out.println("9.停车场管理");
         System.out.println("=============================");
         System.out.println("请选择：");
     }
@@ -192,7 +207,17 @@ public class ManageSystem {
         System.out.println("请输入新增景点名称：");
         Scanner sc = new Scanner(System.in);
         String name = sc.next();
-        this.addSpot(spots.size() + 1, name);
+
+        this.addSpot(getMaxSpotNum() + 1, name);
+    }
+
+    private int getMaxSpotNum() {
+        int res = Integer.MIN_VALUE;
+        for (Map.Entry<String, VNode> entry : spots.entrySet()) {
+            if (entry.getValue().getNumber() > res)
+                res = entry.getValue().getNumber();
+        }
+        return res;
     }
 
     private void DeleteSpot() { // 删除景点
@@ -310,25 +335,28 @@ public class ManageSystem {
      *
      * @param root 最小生成树的根结点
      */
-    private void createTourSortGraph(String root) {
-        if (spots.get(root) == null)
+    private void createTourSortGraph(String root, Stack<String> tourPath) {
+      /*  if (spots.get(root) == null)
             return;
-        List<TreeNode<String>> tree = new ArrayList<>();
+        Set<TreeNode<String>> tree = new HashSet<>();
         TreeNode<String> rootNode = new TreeNode<>(root);
         tree.add(rootNode);
 
-        PriorityBlockingQueue<VNode> candidate = new PriorityBlockingQueue<>(12, distanceComparator);
-        while (tree.size() != spots.size()) {
+        PriorityBlockingQueue<ArcNode> candidate = new PriorityBlockingQueue<>(12, distanceComparator);
+        while (tree.size() != spots.size()) { // 如果还有结点需要添加到树中
             for (TreeNode<String> treeNode : tree) { // 对于树中每个结点
-                if (arcs.get(treeNode.value) != null) {
-                    for (ArcNode arcNode : arcs.get(treeNode.value)) { // 对于结点的每条弧
-                        candidate.add(spots.get(arcNode.getTo()));
+                if (arcs.get(treeNode.value) == null)
+                    continue;
+                for (ArcNode arcNode : arcs.get(treeNode.value)) { // 对于结点的每条弧
+                    if (!tree.contains(arcNode.getTo())) {
+                        candidate.add(arcNode);
                     }
                 }
             }
             // TODO 判断成环
+
             // TODO 向生成树添加结点
-        }
+        }*/
     }
 
     private void CreateTourSortGraph() {
@@ -336,6 +364,87 @@ public class ManageSystem {
         Scanner sc = new Scanner(System.in);
         root = sc.next();
         System.out.println("请输入游览起始景点：");
-        createTourSortGraph(root);
+        Stack<String> tourPath = new Stack<>();
+        createTourSortGraph(root, tourPath);
+    }
+
+    private void ParkingLotManage() {
+        while (true) {
+            System.out.println("1.汽车进车场");
+            System.out.println("2.汽车出车场");
+            System.out.println("3.返回");
+            int command;
+            Scanner sc = new Scanner(System.in);
+            command = sc.nextInt();
+            if (command == 3)
+                return;
+            int carNumber;
+            System.out.println("车牌号：");
+            carNumber = sc.nextInt();
+            switch (command) {
+                case 1: {
+                    System.out.println("进场时间：");
+                    String time = sc.nextLine();
+                    addCar(carNumber, time);
+                    break;
+                }
+                case 2: {
+                    removeCar(carNumber);
+                    break;
+                }
+                default:
+                    break;
+            }
+        }
+    }
+
+    private void addCar(int carNumber, String time) {
+        Car car = new Car(carNumber);
+        if (parkingLot.size() == parkingNum) { // 停车库满
+            pavement.add(car); // 停在便道，不计费
+            System.out.println("#" + carNumber + " 停放在便道 " + pavement.size() + " 号位");
+        } else { // 停车库有空位
+            try {
+                car.setAr_time(dateFormat.parse(time));
+            } catch (ParseException e) {
+                e.printStackTrace();
+                System.out.println("[异常]时间格式有误");
+            }
+            parkingLot.add(car); // 进入停车场
+            System.out.println("进场时间：" + time);
+            System.out.println("#" + carNumber + " 已进入停车场 " + parkingLot.size() + " 号车道");
+        }
+
+    }
+
+    private void removeCar(int carNumber) {
+        while (parkingLot.peek().getNumber() != carNumber) {
+            tempParking.add(parkingLot.pop());
+        }
+        if (parkingLot.size() == 0) {
+            System.out.println("[错误]该车未曾进入停车场");
+        } else {
+            Car car = parkingLot.pop();
+            Date quitTime = new Date();
+            System.out.println("退场时间：" + dateFormat.format(quitTime));
+            Date enterTime = car.getAr_time();
+            long diff = quitTime.getTime() - enterTime.getTime();
+            long days = diff / (1000 * 60 * 60 * 24);
+            long hours = (diff - days * (1000 * 60 * 60 * 24)) / (1000 * 60 * 60);
+            long minutes = (diff - days * (1000 * 60 * 60 * 24) - hours * (1000 * 60 * 60)) / (1000 * 60);
+            System.out.println("停车时长：" + days + " 天 " + hours + " 小时 " + minutes + " 分");
+        }
+        while (tempParking.size() > 0) {
+            parkingLot.add(tempParking.pop());
+        }
+        // 便道等候的车进入停车场
+        if (parkingLot.size() < parkingNum && pavement.size() != 0) {
+            Car pavementFront = pavement.poll();
+            parkingLot.add(pavementFront);
+            Date curTime = new Date();
+            pavementFront.setAr_time(curTime);
+            System.out.println("进场时间：" + dateFormat.format(curTime));
+            System.out.println("#" + carNumber + " 已进入停车场 " + parkingLot.size() + " 号车道");
+        }
     }
 }
