@@ -9,7 +9,7 @@ import java.util.concurrent.PriorityBlockingQueue;
 public class ManageSystem {
     private HashMap<String, List<ArcNode>> arcs;
     private HashMap<String, VNode> spots;
-    private List<Car> cars;
+    private HashMap<Integer, Car> cars;
     private Stack<Car> parkingLot;
     private Stack<Car> tempParking;
     private Queue<Car> pavement;
@@ -20,13 +20,13 @@ public class ManageSystem {
     private ManageSystem() {
         arcs = new HashMap<>();
         spots = new HashMap<>();
-        cars = new ArrayList<>();
+        cars = new HashMap<>();
         parkingLot = new Stack<>();
         tempParking = new Stack<>();
         pavement = new LinkedList<>();
     }
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws ParseException {
         ManageSystem manageSystem = new ManageSystem();
         manageSystem.CreateGraph();
         Scanner sc;
@@ -368,28 +368,38 @@ public class ManageSystem {
         createTourSortGraph(root, tourPath);
     }
 
-    private void ParkingLotManage() {
+    private void ParkingLotManage() throws ParseException {
         while (true) {
+            Scanner sc = new Scanner(System.in);
             System.out.println("1.汽车进车场");
             System.out.println("2.汽车出车场");
             System.out.println("3.返回");
-            int command;
-            Scanner sc = new Scanner(System.in);
-            command = sc.nextInt();
+            int command = sc.nextInt();
             if (command == 3)
                 return;
-            int carNumber;
             System.out.println("车牌号：");
-            carNumber = sc.nextInt();
+            int carNumber = sc.nextInt();
+            Scanner stringScanner = new Scanner(System.in);
+            String time;
             switch (command) {
                 case 1: {
-                    System.out.println("进场时间：");
-                    String time = sc.nextLine();
-                    addCar(carNumber, time);
+                    if (cars.containsKey(carNumber))
+                        System.out.println("[信息]该车已进入停车场或在便道中");
+                    else {
+                        System.out.println("进场时间：");
+                        time = stringScanner.nextLine();
+                        addCar(carNumber, time);
+                    }
                     break;
                 }
                 case 2: {
-                    removeCar(carNumber);
+                    if (!cars.containsKey(carNumber))
+                        System.out.println("[错误]该车尚未进入停车场或在便道中");
+                    else {
+                        System.out.println("离场时间：");
+                        time = stringScanner.nextLine();
+                        removeCar(carNumber, time);
+                    }
                     break;
                 }
                 default:
@@ -399,7 +409,12 @@ public class ManageSystem {
     }
 
     private void addCar(int carNumber, String time) {
+        if (cars.get(carNumber) != null) {
+            System.out.println("[信息]该车已进入停车场或在便道中");
+            return;
+        }
         Car car = new Car(carNumber);
+        cars.put(carNumber, car);
         if (parkingLot.size() == parkingNum) { // 停车库满
             pavement.add(car); // 停在便道，不计费
             System.out.println("#" + carNumber + " 停放在便道 " + pavement.size() + " 号位");
@@ -414,25 +429,34 @@ public class ManageSystem {
             System.out.println("进场时间：" + time);
             System.out.println("#" + carNumber + " 已进入停车场 " + parkingLot.size() + " 号车道");
         }
-
     }
 
-    private void removeCar(int carNumber) {
-        while (parkingLot.peek().getNumber() != carNumber) {
+    private void removeCar(int carNumber, String time) throws ParseException {
+        if (parkingLot.size() == 0) {
+            System.out.println("[错误]停车场尚无车辆");
+            return;
+        }
+        if (!cars.containsKey(carNumber)) {
+            System.out.println("[错误]该车尚未进入停车场或在便道中");
+            return;
+        }
+        while (parkingLot.size() > 0 && parkingLot.peek().getNumber() != carNumber) {
             tempParking.add(parkingLot.pop());
         }
         if (parkingLot.size() == 0) {
-            System.out.println("[错误]该车未曾进入停车场");
-        } else {
+            System.out.println("[错误]该车仍在便道中");
+        } else { // 车在停车场中
             Car car = parkingLot.pop();
-            Date quitTime = new Date();
-            System.out.println("退场时间：" + dateFormat.format(quitTime));
+
+            System.out.println("退场时间：" + time);
+            Date quitTime = dateFormat.parse(time);
             Date enterTime = car.getAr_time();
             long diff = quitTime.getTime() - enterTime.getTime();
             long days = diff / (1000 * 60 * 60 * 24);
             long hours = (diff - days * (1000 * 60 * 60 * 24)) / (1000 * 60 * 60);
             long minutes = (diff - days * (1000 * 60 * 60 * 24) - hours * (1000 * 60 * 60)) / (1000 * 60);
             System.out.println("停车时长：" + days + " 天 " + hours + " 小时 " + minutes + " 分");
+            cars.remove(carNumber);
         }
         while (tempParking.size() > 0) {
             parkingLot.add(tempParking.pop());
@@ -443,8 +467,7 @@ public class ManageSystem {
             parkingLot.add(pavementFront);
             Date curTime = new Date();
             pavementFront.setAr_time(curTime);
-            System.out.println("进场时间：" + dateFormat.format(curTime));
-            System.out.println("#" + carNumber + " 已进入停车场 " + parkingLot.size() + " 号车道");
+            System.out.println("#" + pavementFront.getNumber() + " 已从便道进入停车场 " + parkingLot.size() + " 号车道；进场时间：" + dateFormat.format(curTime));
         }
     }
 }
