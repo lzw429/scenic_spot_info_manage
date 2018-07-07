@@ -16,6 +16,7 @@ public class ManageSystem {
     private final int parkingNum = 5; // 停车场大小
     private Comparator<VNode> distanceComparator = (o1, o2) -> Integer.compare(o1.getTotalDist() - o2.getTotalDist(), 0); // 距离比较
     private SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+    private HamiltonianCycle hamiltonianCycle = new HamiltonianCycle();
 
     private ManageSystem() {
         arcs = new HashMap<>();
@@ -283,9 +284,11 @@ public class ManageSystem {
             throw new IllegalArgumentException("[错误]未找到景点");
         }
 
-
         PriorityBlockingQueue<VNode> candidate = new PriorityBlockingQueue<>(12, distanceComparator);
-
+        for (Map.Entry<String, VNode> entry : spots.entrySet()) { // 每次查询前的初始化
+            entry.getValue().setVisited(false);
+            entry.getValue().setTotalDist(Integer.MAX_VALUE);
+        }
         VNode curSpot = spots.get(v1);
         curSpot.setTotalDist(0); // 初始值为INT_MAX_VALUE
         candidate.add(curSpot);
@@ -327,45 +330,13 @@ public class ManageSystem {
             return Integer.MAX_VALUE;
     }
 
-    /**
-     * 最小Hamilton回路作为导游路线图
-     * 1.最小生成树算法找出带权图的一颗以root为根的最小生成树T
-     * 2.前序遍历树T得到顶点表L
-     * 3.将root添加到顶点表L的末尾，按表L中顶点次序组成回路H，作为计算结果
-     *
-     * @param root 最小生成树的根结点
-     */
-    private void createTourSortGraph(String root, Stack<String> tourPath) {
-      /*  if (spots.get(root) == null)
-            return;
-        Set<TreeNode<String>> tree = new HashSet<>();
-        TreeNode<String> rootNode = new TreeNode<>(root);
-        tree.add(rootNode);
-
-        PriorityBlockingQueue<ArcNode> candidate = new PriorityBlockingQueue<>(12, distanceComparator);
-        while (tree.size() != spots.size()) { // 如果还有结点需要添加到树中
-            for (TreeNode<String> treeNode : tree) { // 对于树中每个结点
-                if (arcs.get(treeNode.value) == null)
-                    continue;
-                for (ArcNode arcNode : arcs.get(treeNode.value)) { // 对于结点的每条弧
-                    if (!tree.contains(arcNode.getTo())) {
-                        candidate.add(arcNode);
-                    }
-                }
-            }
-            // TODO 判断成环
-
-            // TODO 向生成树添加结点
-        }*/
-    }
-
     private void CreateTourSortGraph() {
         String root;
         Scanner sc = new Scanner(System.in);
         root = sc.next();
         System.out.println("请输入游览起始景点：");
         Stack<String> tourPath = new Stack<>();
-        createTourSortGraph(root, tourPath);
+        hamiltonianCycle.createTourSortGraph(root, tourPath, spots.size());
     }
 
     private void ParkingLotManage() throws ParseException {
@@ -468,6 +439,54 @@ public class ManageSystem {
             Date curTime = new Date();
             pavementFront.setAr_time(curTime);
             System.out.println("#" + pavementFront.getNumber() + " 已从便道进入停车场 " + parkingLot.size() + " 号车道；进场时间：" + dateFormat.format(curTime));
+        }
+    }
+
+    /**
+     * 最小Hamilton回路作为导游路线图
+     * 1.最小生成树算法找出带权图的一颗以root为根的最小生成树T
+     * 2.前序遍历树T得到顶点表L
+     * 3.将root添加到顶点表L的末尾，按表L中顶点次序组成回路H，作为计算结果
+     *
+     * @param root 最小生成树的根结点
+     */
+    public void createTourSortGraph(String root, Stack<String> tourPath) {
+      /*  if (spots.get(root) == null)
+            return;
+        Set<TreeNode<String>> tree = new HashSet<>();
+        TreeNode<String> rootNode = new TreeNode<>(root);
+        tree.add(rootNode);
+
+        PriorityBlockingQueue<ArcNode> candidate = new PriorityBlockingQueue<>(12, distanceComparator);
+        while (tree.size() != spots.size()) { // 如果还有结点需要添加到树中
+            for (TreeNode<String> treeNode : tree) { // 对于树中每个结点
+                if (arcs.get(treeNode.value) == null)
+                    continue;
+                for (ArcNode arcNode : arcs.get(treeNode.value)) { // 对于结点的每条弧
+                    if (!tree.contains(arcNode.getTo())) {
+                        candidate.add(arcNode);
+                    }
+                }
+            }
+
+        }*/
+        Set<String> graph = new HashSet<>();
+        Set<String> remain = new HashSet<>();
+        for (Map.Entry<String, VNode> entry : spots.entrySet()) {
+            remain.add(entry.getKey());
+        }
+        graph.add(root);
+        remain.remove(root);
+    }
+
+    private boolean recursive(String root, String curSpot, Set<String> graph, Set<String> remain) {
+        boolean res;
+        if (graph.size() == spots.size()) {
+            if (getArc(curSpot, root) != null)
+                res = true;
+            else {
+
+            }
         }
     }
 }
