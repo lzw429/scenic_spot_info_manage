@@ -16,7 +16,7 @@ public class ManageSystem {
     private final int parkingNum = 5; // 停车场大小
     private Comparator<VNode> distanceComparator = (o1, o2) -> Integer.compare(o1.getTotalDist() - o2.getTotalDist(), 0); // 距离比较
     private SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-    private HamiltonianCycle hamiltonianCycle = new HamiltonianCycle();
+    private int shortestTourLen = Integer.MAX_VALUE;
 
     private ManageSystem() {
         arcs = new HashMap<>();
@@ -64,8 +64,10 @@ public class ManageSystem {
                     break;
                 case 8:
                     manageSystem.CreateTourSortGraph();
+                    break;
                 case 9:
                     manageSystem.ParkingLotManage();
+                    break;
                 default:
                     System.out.println("[错误]请重新选择");
                     break;
@@ -83,7 +85,7 @@ public class ManageSystem {
         System.out.println("4.删除景点");
         System.out.println("5.新增路线");
         System.out.println("6.删除路线");
-        System.out.println("7.两景点最短路径与最短距离");
+        System.out.println("7.两景点最短路径与最短距离"); // Dijkstra 算法和 FloydWarshall 算法
         System.out.println("8.导游路线图");
         System.out.println("9.停车场管理");
         System.out.println("=============================");
@@ -253,14 +255,29 @@ public class ManageSystem {
         Scanner sc = new Scanner(System.in);
         String line = sc.nextLine();
         String[] arcStr = line.split(" ");
-        Stack<String> shortestPath = new Stack<>();
+        Stack<String> shortestPath_Dij = new Stack<>();
+        Stack<String> shortestPath_Floyd = new Stack<>();
         if (arcStr[0].equals(arcStr[1])) {
             System.out.println("[信息]您输入了同一景点");
             return;
         }
-        int shortestDist = this.MiniDistance_Dijkstra(arcStr[0], arcStr[1], shortestPath);
+        if (spots.get(arcStr[0]) == null || spots.get(arcStr[1]) == null) {
+            throw new IllegalArgumentException("[错误]未找到景点");
+        }
+        int shortestDist = this.MiniDistance_Dijkstra(arcStr[0], arcStr[1], shortestPath_Dij);
+        System.out.println("Dijkstra 算法：");
         System.out.println("最短距离：" + shortestDist);
         System.out.println("最短路径：");
+        printShortestPath(shortestPath_Dij);
+
+        shortestDist = this.MiniDistance_FloydWarshall(arcStr[0], arcStr[1], shortestPath_Floyd);
+        System.out.println("FloydWarshall 算法：");
+        System.out.println("最短距离：" + shortestDist);
+        System.out.println("最短路径：");
+        printShortestPath(shortestPath_Floyd);
+    }
+
+    private void printShortestPath(Stack<String> shortestPath) {
         int cnt = 1;
         System.out.print("1." + shortestPath.pop());
         while (shortestPath.size() > 1) {
@@ -280,14 +297,13 @@ public class ManageSystem {
      * @return 最短距离
      */
     private int MiniDistance_Dijkstra(String v1, String v2, Stack<String> path) {
-        if (spots.get(v1) == null || spots.get(v2) == null) {
-            throw new IllegalArgumentException("[错误]未找到景点");
-        }
+
 
         PriorityBlockingQueue<VNode> candidate = new PriorityBlockingQueue<>(12, distanceComparator);
         for (Map.Entry<String, VNode> entry : spots.entrySet()) { // 每次查询前的初始化
             entry.getValue().setVisited(false);
             entry.getValue().setTotalDist(Integer.MAX_VALUE);
+            entry.getValue().setFromSpot(null);
         }
         VNode curSpot = spots.get(v1);
         curSpot.setTotalDist(0); // 初始值为INT_MAX_VALUE
@@ -330,13 +346,69 @@ public class ManageSystem {
             return Integer.MAX_VALUE;
     }
 
+    /**
+     * 使用FloydWarshall算法，求两景点间最短路径和最短距离
+     *
+     * @param v1   起始景点名称
+     * @param v2   终止景点名称
+     * @param path ArcNode逆序入栈，顺序出栈即得到最短路径
+     * @return 最短距离
+     */
+    private int MiniDistance_FloydWarshall(String v1, String v2, Stack<String> path) {
+        int[][] dist = new int[spots.size()][spots.size()];
+        int[][] pre = new int[spots.size()][spots.size()];
+        // pre[i][j] = p 表示i到j的最短路径为 i->...->p->j
+        String[] VNodes = new String[spots.size()];
+        int i = 0;
+        int j;
+        for (i = 0; i < spots.size(); i++) {
+            for (j = 0; j < spots.size(); j++) {
+                pre[i][j] = i;
+            }
+        }
+        int v1Index = 0;
+        int v2Index = 0;
+        i = 0;
+        for (Map.Entry<String, VNode> entry : spots.entrySet()) {
+            if (entry.getKey().equals(v1)) v1Index = i;
+            if (entry.getKey().equals(v2)) v2Index = i;
+            VNodes[i] = entry.getKey();
+            i++;
+        }
+        i = j = 0;
+        for (i = 0; i < spots.size(); i++) {
+            for (j = 0; j < spots.size(); j++) {
+                dist[i][j] = getDistance(VNodes[i], VNodes[j]);
+            }
+        }
+        for (int k = 0; k < spots.size(); k++) {
+            for (i = 0; i < spots.size(); i++) {
+                for (j = 0; j < spots.size(); j++) {
+                    if (dist[i][k] + dist[k][j] < dist[i][j]) {
+                        dist[i][j] = dist[i][k] + dist[k][j];
+                        pre[i][j] = pre[k][j];
+                    }
+                }
+            }
+        }
+        if (dist[v1Index][v2Index] < 32767) {
+            int t = v2Index;
+            while (t != v1Index) {
+                path.add(VNodes[t]);
+                t = pre[v1Index][t];
+            }
+            path.add(VNodes[v1Index]);
+            return dist[v1Index][v2Index];
+        } else return Integer.MAX_VALUE;
+    }
+
     private void CreateTourSortGraph() {
         String root;
+        System.out.println("请输入游览起始景点：");
         Scanner sc = new Scanner(System.in);
         root = sc.next();
-        System.out.println("请输入游览起始景点：");
         Stack<String> tourPath = new Stack<>();
-        hamiltonianCycle.createTourSortGraph(root, tourPath, spots.size());
+        this.createTourSortGraph(root, tourPath);
     }
 
     private void ParkingLotManage() throws ParseException {
@@ -470,23 +542,91 @@ public class ManageSystem {
             }
 
         }*/
-        Set<String> graph = new HashSet<>();
-        Set<String> remain = new HashSet<>();
+        String[] hamCycle = new String[spots.size()];
+        hamCycle[0] = root;
+        int i = 1;
         for (Map.Entry<String, VNode> entry : spots.entrySet()) {
-            remain.add(entry.getKey());
+            String curSpot = entry.getKey();
+            if (!curSpot.equals(root))
+                hamCycle[i++] = curSpot;
         }
-        graph.add(root);
-        remain.remove(root);
+        shortestTourLen = Integer.MAX_VALUE;
+        hamCyclePermutation(hamCycle, 0, spots.size());
+        System.out.println("最短环游长度：" + shortestTourLen);
+        for (i = 0; i < spots.size(); i++)
+            System.out.print(" " + hamCycle[i] + " ");
     }
 
-    private boolean recursive(String root, String curSpot, Set<String> graph, Set<String> remain) {
-        boolean res;
-        if (graph.size() == spots.size()) {
-            if (getArc(curSpot, root) != null)
-                res = true;
-            else {
-
+    public void hamCyclePermutation(String[] hamCycle, int pos, int len) {
+        int minLenOfAll = Integer.MAX_VALUE;
+        if (pos == len - 1) {
+            int minLen = 0;
+            hamCycleUtil(1, hamCycle, minLen);
+            if (minLen < shortestTourLen)
+                shortestTourLen = minLen;
+        } else {
+            for (int i = pos; i < len; i++) {
+                Util.swap(hamCycle, pos, i);
+                hamCyclePermutation(hamCycle, pos + 1, len);
+                Util.swap(hamCycle, pos, i);
             }
         }
+    }
+
+    /**
+     * 检查顶点curSpot是否可在hamCycle[pos]处添加
+     *
+     * @param curSpot  当前顶点
+     * @param hamCycle 正在生成的Hamiltonian图
+     * @param pos      当前hamCycle数组的索引
+     * @return 可添加true，否则false
+     */
+    private boolean isSafe(String curSpot, String[] hamCycle, int pos) {
+        // 判断该顶点是否前一顶点的邻接顶点
+        if (getArc(hamCycle[pos - 1], curSpot) == null)
+            return false;
+        // 检查顶点是否被包含在hamCycle中
+        for (int i = 0; i < pos; i++)
+            if (hamCycle[i].equals(curSpot))
+                return false;
+        return true;
+    }
+
+    /**
+     * 用于 Hamiltonian 环的递归函数
+     *
+     * @param hamCycle 正在生成的Hamiltonian图
+     * @param pos      当前hamCycle数组的索引
+     * @return 找到解返回true，否则false
+     */
+    private boolean hamCycleUtil(int pos, String[] hamCycle, int minLen) {
+        // 如果所有顶点都被添加到Hamilton环
+        if (pos == spots.size()) {
+            // 如果最后一个顶点与首个顶点间有边
+            ArcNode arc = getArc(hamCycle[pos - 1], hamCycle[0]);
+            if (arc != null) {
+                minLen += arc.getDistance();
+                //System.out.println("最短环游长度：" + minLen);
+                return true;
+            }
+            return false;
+        }
+        // 在Hamilton环中尝试不同的候选顶点，跳过0因为开始时已添加
+        for (Map.Entry<String, VNode> entry : spots.entrySet()) {
+            String curSpot = entry.getKey();
+            if (isSafe(curSpot, hamCycle, pos)) {
+                hamCycle[pos] = curSpot;
+                int dist = getArc(curSpot, hamCycle[pos - 1]).getDistance();
+                minLen += dist;
+                // 递归构建剩余路径
+                if (hamCycleUtil(pos + 1, hamCycle, minLen))
+                    return true;
+                // 如果添加顶点curSpot找不到解，去除
+                minLen -= dist;
+                hamCycle[pos] = null;
+            }
+        }
+        // 如果没有顶点能被添加到现有的环中，返回false
+        return false;
     }
 }

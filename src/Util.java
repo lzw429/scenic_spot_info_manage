@@ -41,4 +41,27 @@ public class Util {
         }
         return res;
     }
+
+    public static void swap(String[] str, int i, int j) {
+        String temp = str[i];
+        str[i] = str[j];
+        str[j] = temp;
+    }
+
+    /**
+     * @param str 被全排列的字符串
+     * @param pos 当前位置
+     * @param len 排列范围是[pos, pos + len)
+     */
+    public void nextPermutation(String[] str, int pos, int len) {
+        if (pos == len - 1) {
+
+        } else {
+            for (int i = pos; i < len; i++) {
+                swap(str, pos, i);
+                nextPermutation(str, pos + 1, len);
+                swap(str, pos, i);
+            }
+        }
+    }
 }
