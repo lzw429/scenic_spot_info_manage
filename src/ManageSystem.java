@@ -557,6 +557,7 @@ public class ManageSystem {
             System.out.print(" " + hamCycle[i] + " ");
     }
 
+
     public void hamCyclePermutation(String[] hamCycle, int pos, int len) {
         int minLenOfAll = Integer.MAX_VALUE;
         if (pos == len - 1) {
@@ -592,6 +593,8 @@ public class ManageSystem {
         return true;
     }
 
+    private int backTrackingCount = 0;
+
     /**
      * 用于 Hamiltonian 环的递归函数
      *
@@ -606,7 +609,7 @@ public class ManageSystem {
             ArcNode arc = getArc(hamCycle[pos - 1], hamCycle[0]);
             if (arc != null) {
                 minLen += arc.getDistance();
-                //System.out.println("最短环游长度：" + minLen);
+                System.out.println("最短环游长度：" + minLen + " " + (backTrackingCount++));
                 return true;
             }
             return false;
@@ -629,4 +632,6 @@ public class ManageSystem {
         // 如果没有顶点能被添加到现有的环中，返回false
         return false;
     }
+
+
 }
