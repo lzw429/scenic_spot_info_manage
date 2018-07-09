@@ -14,7 +14,7 @@ public class ManageSystem {
     private Stack<Car> tempParking;
     private Queue<Car> pavement;
     private final int parkingNum = 5; // 停车场大小
-    private Comparator<VNode> distanceComparator = (o1, o2) -> Integer.compare(o1.getTotalDist() - o2.getTotalDist(), 0); // 距离比较
+    private Comparator<VNode> spotDistanceComparator = (o1, o2) -> Integer.compare(o1.getTotalDist() - o2.getTotalDist(), 0); // 距离比较
     private SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
     private int shortestTourLen = Integer.MAX_VALUE;
 
@@ -299,7 +299,7 @@ public class ManageSystem {
     private int MiniDistance_Dijkstra(String v1, String v2, Stack<String> path) {
 
 
-        PriorityBlockingQueue<VNode> candidate = new PriorityBlockingQueue<>(12, distanceComparator);
+        PriorityBlockingQueue<VNode> candidate = new PriorityBlockingQueue<>(12, spotDistanceComparator);
         for (Map.Entry<String, VNode> entry : spots.entrySet()) { // 每次查询前的初始化
             entry.getValue().setVisited(false);
             entry.getValue().setTotalDist(Integer.MAX_VALUE);
@@ -359,7 +359,7 @@ public class ManageSystem {
         int[][] pre = new int[spots.size()][spots.size()];
         // pre[i][j] = p 表示i到j的最短路径为 i->...->p->j
         String[] VNodes = new String[spots.size()];
-        int i = 0;
+        int i;
         int j;
         for (i = 0; i < spots.size(); i++) {
             for (j = 0; j < spots.size(); j++) {
@@ -407,8 +407,12 @@ public class ManageSystem {
         System.out.println("请输入游览起始景点：");
         Scanner sc = new Scanner(System.in);
         root = sc.next();
-        Stack<String> tourPath = new Stack<>();
+        List<String> tourPath = new ArrayList<>();
         this.createTourSortGraph(root, tourPath);
+        for (String string : tourPath) {
+            System.out.print(string + "->");
+        }
+        System.out.println(root);
     }
 
     private void ParkingLotManage() throws ParseException {
@@ -522,116 +526,41 @@ public class ManageSystem {
      *
      * @param root 最小生成树的根结点
      */
-    public void createTourSortGraph(String root, Stack<String> tourPath) {
-      /*  if (spots.get(root) == null)
+    public void createTourSortGraph(String root, List<String> path) {
+        if (spots.get(root) == null) // 根结点为空
             return;
-        Set<TreeNode<String>> tree = new HashSet<>();
-        TreeNode<String> rootNode = new TreeNode<>(root);
-        tree.add(rootNode);
+        Set<String> tree = new HashSet<>();
+        Map<String, TreeNode<String>> treeNodeMap = new HashMap<>();
 
-        PriorityBlockingQueue<ArcNode> candidate = new PriorityBlockingQueue<>(12, distanceComparator);
-        while (tree.size() != spots.size()) { // 如果还有结点需要添加到树中
-            for (TreeNode<String> treeNode : tree) { // 对于树中每个结点
-                if (arcs.get(treeNode.value) == null)
+        TreeNode<String> rootNode = new TreeNode<>(root);
+        tree.add(root);
+        treeNodeMap.put(root, rootNode);
+        Comparator<ArcNode> arcDistanceComparator = (o1, o2) -> Integer.compare(o1.getDistance() - o2.getDistance(), 0);
+
+        while (tree.size() != spots.size()) { // 如果还有顶点需要添加到树中
+            PriorityBlockingQueue<ArcNode> candidate = new PriorityBlockingQueue<>(12, arcDistanceComparator);
+            for (String spot : tree) { // 对于树中每个顶点
+                if (arcs.get(spot) == null) // 当前顶点无边
                     continue;
-                for (ArcNode arcNode : arcs.get(treeNode.value)) { // 对于结点的每条弧
-                    if (!tree.contains(arcNode.getTo())) {
+                for (ArcNode arcNode : arcs.get(spot)) { // 对于顶点的每条弧
+                    if (!tree.contains(arcNode.getTo())) { // 如果弧指向的顶点尚未添加到树中
+                        arcNode.setFrom(spot);
                         candidate.add(arcNode);
                     }
                 }
             }
-
-        }*/
-        String[] hamCycle = new String[spots.size()];
-        hamCycle[0] = root;
-        int i = 1;
-        for (Map.Entry<String, VNode> entry : spots.entrySet()) {
-            String curSpot = entry.getKey();
-            if (!curSpot.equals(root))
-                hamCycle[i++] = curSpot;
-        }
-        shortestTourLen = Integer.MAX_VALUE;
-        hamCyclePermutation(hamCycle, 0, spots.size());
-        System.out.println("最短环游长度：" + shortestTourLen);
-        for (i = 0; i < spots.size(); i++)
-            System.out.print(" " + hamCycle[i] + " ");
-    }
-
-
-    public void hamCyclePermutation(String[] hamCycle, int pos, int len) {
-        int minLenOfAll = Integer.MAX_VALUE;
-        if (pos == len - 1) {
-            int minLen = 0;
-            hamCycleUtil(1, hamCycle, minLen);
-            if (minLen < shortestTourLen)
-                shortestTourLen = minLen;
-        } else {
-            for (int i = pos; i < len; i++) {
-                Util.swap(hamCycle, pos, i);
-                hamCyclePermutation(hamCycle, pos + 1, len);
-                Util.swap(hamCycle, pos, i);
+            if (candidate.peek() == null) {
+                System.out.println("[错误]优先级队列为空");
+                return;
             }
+            String curSpot = candidate.peek().getTo();
+            TreeNode<String> curNode = new TreeNode<>(curSpot);
+            treeNodeMap.get(candidate.peek().getFrom()).insert(curNode); // 添加为子结点
+            tree.add(curSpot);
+            treeNodeMap.put(curSpot, curNode);
         }
+
+        List<String> traversal = rootNode.preorderTraversal();
+        path.addAll(traversal);
     }
-
-    /**
-     * 检查顶点curSpot是否可在hamCycle[pos]处添加
-     *
-     * @param curSpot  当前顶点
-     * @param hamCycle 正在生成的Hamiltonian图
-     * @param pos      当前hamCycle数组的索引
-     * @return 可添加true，否则false
-     */
-    private boolean isSafe(String curSpot, String[] hamCycle, int pos) {
-        // 判断该顶点是否前一顶点的邻接顶点
-        if (getArc(hamCycle[pos - 1], curSpot) == null)
-            return false;
-        // 检查顶点是否被包含在hamCycle中
-        for (int i = 0; i < pos; i++)
-            if (hamCycle[i].equals(curSpot))
-                return false;
-        return true;
-    }
-
-    private int backTrackingCount = 0;
-
-    /**
-     * 用于 Hamiltonian 环的递归函数
-     *
-     * @param hamCycle 正在生成的Hamiltonian图
-     * @param pos      当前hamCycle数组的索引
-     * @return 找到解返回true，否则false
-     */
-    private boolean hamCycleUtil(int pos, String[] hamCycle, int minLen) {
-        // 如果所有顶点都被添加到Hamilton环
-        if (pos == spots.size()) {
-            // 如果最后一个顶点与首个顶点间有边
-            ArcNode arc = getArc(hamCycle[pos - 1], hamCycle[0]);
-            if (arc != null) {
-                minLen += arc.getDistance();
-                System.out.println("最短环游长度：" + minLen + " " + (backTrackingCount++));
-                return true;
-            }
-            return false;
-        }
-        // 在Hamilton环中尝试不同的候选顶点，跳过0因为开始时已添加
-        for (Map.Entry<String, VNode> entry : spots.entrySet()) {
-            String curSpot = entry.getKey();
-            if (isSafe(curSpot, hamCycle, pos)) {
-                hamCycle[pos] = curSpot;
-                int dist = getArc(curSpot, hamCycle[pos - 1]).getDistance();
-                minLen += dist;
-                // 递归构建剩余路径
-                if (hamCycleUtil(pos + 1, hamCycle, minLen))
-                    return true;
-                // 如果添加顶点curSpot找不到解，去除
-                minLen -= dist;
-                hamCycle[pos] = null;
-            }
-        }
-        // 如果没有顶点能被添加到现有的环中，返回false
-        return false;
-    }
-
-
 }
