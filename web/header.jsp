@@ -24,3 +24,4 @@
 <script type="text/javascript" src="js/jQueryFormPlugin-4.2.2.js"></script>
 <script type="text/javascript" src="js/materialize.js"></script>
 <script type="text/javascript" src="js/myJS.js"></script>
+<script type="text/javascript" src="js/echarts.js"></script>
