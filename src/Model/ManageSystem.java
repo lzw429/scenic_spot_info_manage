@@ -165,7 +165,7 @@ public class ManageSystem {
         }
     }
 
-    private static void addArc(String VNodeName, ArcNode arc) {
+    public static void addArc(String VNodeName, ArcNode arc) {
         if (arcs.containsKey(VNodeName)) {
             arcs.get(VNodeName).add(arc);
         } else {
@@ -180,8 +180,8 @@ public class ManageSystem {
      * @param VNodeName2 景点2
      * @return 景点1到景点2的弧
      */
-    private ArcNode getArc(String VNodeName1, String VNodeName2) {
-        if (arcs.get(VNodeName1).isEmpty())
+    public static ArcNode getArc(String VNodeName1, String VNodeName2) {
+        if (!arcs.containsKey(VNodeName1) || arcs.get(VNodeName1).isEmpty())
             return null;
         for (ArcNode arcNode : arcs.get(VNodeName1)) {
             if (arcNode.getTo().equals(VNodeName2))
@@ -208,7 +208,7 @@ public class ManageSystem {
         else System.out.println("[信息]该景点不存在");
     }
 
-    private int getDistance(String name1, String name2) {
+    private static int getDistance(String name1, String name2) {
         int res = 32767; // 没有距离数据时，输出32767
         if (name1.equals(name2))
             res = 0;
@@ -235,7 +235,7 @@ public class ManageSystem {
         Scanner sc = new Scanner(System.in);
         String name = sc.next();
 
-        this.addSpot(getMaxSpotNum() + 1, name);
+        addSpot(getMaxSpotNum() + 1, name);
     }
 
     private int getMaxSpotNum() {
@@ -320,9 +320,7 @@ public class ManageSystem {
      * @param path ArcNode逆序入栈，顺序出栈即得到最短路径
      * @return 最短距离
      */
-    private int MiniDistance_Dijkstra(String v1, String v2, Stack<String> path) {
-
-
+    public static int MiniDistance_Dijkstra(String v1, String v2, Stack<String> path) {
         PriorityBlockingQueue<VNode> candidate = new PriorityBlockingQueue<>(12, spotDistanceComparator);
         for (Map.Entry<String, VNode> entry : spots.entrySet()) { // 每次查询前的初始化
             entry.getValue().setVisited(false);
@@ -378,7 +376,7 @@ public class ManageSystem {
      * @param path ArcNode逆序入栈，顺序出栈即得到最短路径
      * @return 最短距离
      */
-    private int MiniDistance_FloydWarshall(String v1, String v2, Stack<String> path) {
+    public static int MiniDistance_FloydWarshall(String v1, String v2, Stack<String> path) {
         int[][] dist = new int[spots.size()][spots.size()];
         int[][] pre = new int[spots.size()][spots.size()];
         // pre[i][j] = p 表示i到j的最短路径为 i->...->p->j
@@ -399,7 +397,6 @@ public class ManageSystem {
             VNodes[i] = entry.getKey();
             i++;
         }
-        i = j = 0;
         for (i = 0; i < spots.size(); i++) {
             for (j = 0; j < spots.size(); j++) {
                 dist[i][j] = getDistance(VNodes[i], VNodes[j]);

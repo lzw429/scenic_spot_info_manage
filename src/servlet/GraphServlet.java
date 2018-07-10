@@ -13,8 +13,10 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 @WebServlet("/graph")
 public class GraphServlet extends BaseServlet {
@@ -33,7 +35,7 @@ public class GraphServlet extends BaseServlet {
         }
         String graphJson = getGraphJson();
         // 输出
-        System.out.println("[GraphServlet] " + graphJson);
+        System.out.println("GraphServlet: " + graphJson);
         response.setContentType("text/plain");
         response.getWriter().write(graphJson);
     }
@@ -54,7 +56,10 @@ public class GraphServlet extends BaseServlet {
         JsonObject seriesContent = new JsonObject();
         seriesContent.addProperty("type", "graph");
         seriesContent.addProperty("layout", "force");
-        seriesContent.addProperty("symbolSize", 50);
+        JsonObject force = new JsonObject();
+        force.addProperty("repulsion", 2000); // 顶点间斥力
+        seriesContent.add("force", force);
+        seriesContent.addProperty("symbolSize", 50); // 顶点大小
         seriesContent.addProperty("roam", true);
         JsonObject label = new JsonObject();
         JsonObject normal = new JsonObject();
@@ -86,15 +91,19 @@ public class GraphServlet extends BaseServlet {
         seriesContent.add("data", data);
         JsonArray links = new JsonArray();
         // 从图获取弧的信息
+        Set<ArcNode> arcNodeSet = new HashSet<>(); // 由于是无向图，用集合记录已经输出的边
         for (Map.Entry<String, List<ArcNode>> entry : ManageSystem.getArcs().entrySet()) {
             String fromSpot = entry.getKey();
             List<ArcNode> arcList = entry.getValue();
             for (ArcNode arc : arcList) {
-                JsonObject arcJsonObject = new JsonObject();
-                arcJsonObject.addProperty("source", fromSpot);
-                arcJsonObject.addProperty("target", arc.getTo());
-                arcJsonObject.addProperty("value", arc.getDistance());
-                links.add(arcJsonObject);
+                if (!arcNodeSet.contains(ManageSystem.getArc(arc.getTo(), fromSpot))) {
+                    JsonObject arcJsonObject = new JsonObject();
+                    arcJsonObject.addProperty("source", fromSpot);
+                    arcJsonObject.addProperty("target", arc.getTo());
+                    arcJsonObject.addProperty("value", arc.getDistance());
+                    arcNodeSet.add(ManageSystem.getArc(fromSpot, arc.getTo()));
+                    links.add(arcJsonObject);
+                }
             }
         }
         seriesContent.add("links", links);
@@ -107,9 +116,7 @@ public class GraphServlet extends BaseServlet {
         seriesContent.add("lineStyle", lineStyle);
         series.add(seriesContent);
         echartsGraph.add("series", series);
-        String res = gson.toJson(echartsGraph);
-        System.out.println(res);
-        return res;
+        return gson.toJson(echartsGraph);
     }
 }
 

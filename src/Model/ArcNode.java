@@ -8,7 +8,7 @@ public class ArcNode implements Serializable { // 定义边信息
     private int distance = 32767; // 景点间距离
     private int time; // 需要的时间
 
-    ArcNode(String to, int distance) {
+    public ArcNode(String to, int distance) {
         this.to = to;
         this.distance = distance;
     }

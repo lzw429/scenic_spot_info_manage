@@ -10,6 +10,7 @@ public class VNode implements Serializable { // 定义顶点信息
     private String intro;               // 景点简介
     private boolean hasRestingArea;   // 有无休息区
     private boolean hasLatrine;        // 有无公厕
+    private int popularity;            // 受欢迎度
     // 用于Dijkstra算法的成员变量
     private int totalDist = Integer.MAX_VALUE;
     private boolean visited = false;
@@ -20,7 +21,7 @@ public class VNode implements Serializable { // 定义顶点信息
         this.name = Util.spotNumberToName(number);
     }
 
-    VNode(String name) {
+    public VNode(String name) {
         this.name = name;
     }
 
@@ -91,5 +92,13 @@ public class VNode implements Serializable { // 定义顶点信息
 
     public void setFromSpot(String fromSpot) {
         this.fromSpot = fromSpot;
+    }
+
+    public int getPopularity() {
+        return popularity;
+    }
+
+    public void setPopularity(int popularity) {
+        this.popularity = popularity;
     }
 }

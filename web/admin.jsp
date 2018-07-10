@@ -24,20 +24,73 @@
             <i class="large material-icons">unfold_more</i>
         </a>
         <ul> <!-- 浮动操作按钮的工具栏 -->
-            <li class="waves-effect waves-light"><a href="#!"><i class="material-icons">insert_chart</i></a></li>
-            <li class="waves-effect waves-light"><a href="#!"><i class="material-icons">format_quote</i></a></li>
-            <li class="waves-effect waves-light"><a href="#!"><i class="material-icons">publish</i></a></li>
-            <li class="waves-effect waves-light"><a href="#!"><i class="material-icons">attach_file</i></a></li>
+            <li class="waves-effect waves-light"><a href="#addSpotModal" class="modal-trigger"><i
+                    class="material-icons">add_circle_outline</i>添加景点</a>
+            </li>
+            <li class="waves-effect waves-light"><a href="#addPathModal" class=" modal-trigger"><i
+                    class="material-icons">add_circle_outline</i>添加路线</a>
+            </li>
+            <li class="waves-effect waves-light"><a href="#shortestPathModal" class="modal-trigger"><i
+                    class="material-icons">navigation</i>最短路线规划</a>
+            </li>
+            <li class="waves-effect waves-light"><a href="#!" id="tourSortGraphButton"><i class="material-icons">map</i>导游路线图</a>
+            </li>
         </ul>
     </div>
-    <script type="text/javascript">
-        document.addEventListener('DOMContentLoaded', function () {
-            var elems = document.querySelectorAll('.fixed-action-btn');
-            var instances = M.FloatingActionButton.init(elems, {
-                toolbarEnabled: true
-            });
-        });
-    </script>
+    <div id="addSpotModal" class="modal bottom-sheet"> <!-- 添加景点 模态框-->
+        <div class="modal-content"> <!--模态框内容-->
+            <h4>添加景点</h4>
+            <div class="input-field col s3">
+                <input id="spotName" type="text" class="validate">
+                <label for="spotName">名称</label>
+            </div>
+            <div class="input-field col s3">
+                <input id="spotIntro" type="text" class="validate">
+                <label for="spotIntro">简介</label>
+            </div>
+        </div>
+        <div class="modal-footer"> <!--模态框底部-->
+            <a href="#!" class="modal-close waves-effect waves-green btn-flat" id="addSpotSubmit"
+               onclick="addSpot()">确定</a>
+        </div>
+    </div>
+    <div id="addPathModal" class="modal bottom-sheet"> <!-- 添加路线 模态框-->
+        <div class="modal-content"> <!--模态框内容-->
+            <h4>添加路线</h4>
+            <div class="input-field col s3">
+                <input id="spot1name" type="text" class="validate">
+                <label for="spot1name">景点1名称</label>
+            </div>
+            <div class="input-field col s3">
+                <input id="spot2name" type="text" class="validate">
+                <label for="spot2name">景点2名称</label>
+            </div>
+            <div class="input-field col s3">
+                <input id="distance" type="text" class="validate">
+                <label for="distance">距离</label>
+            </div>
+        </div>
+        <div class="modal-footer"> <!--模态框底部-->
+            <a href="#!" class="modal-close waves-effect waves-green btn-flat" id="addPathSubmit"
+               onclick="addPath()">确定</a>
+        </div>
+    </div>
+    <div id="shortestPathModal" class="modal bottom-sheet"> <!-- 最短路线规划 模态框-->
+        <div class="modal-content"> <!--模态框内容-->
+            <h4>最短路线规划</h4>
+            <div class="input-field col s3">
+                <input id="startSpotName" type="text" class="validate">
+                <label for="startSpotName">起始景点</label>
+            </div>
+            <div class="input-field col s3">
+                <input id="endSpotName" type="text" class="validate">
+                <label for="endSpotName">到达景点</label>
+            </div>
+        </div>
+        <div class="modal-footer"> <!--模态框底部-->
+            <a href="#!" class="modal-close waves-effect waves-green btn-flat" id="shortestPathSubmit">确定</a>
+        </div>
+    </div>
     <script type="text/javascript">
         myChart = {};
         option = {};
@@ -58,9 +111,65 @@
         }
 
         $(document).ready(function () {
-            myChart = echarts.init(document.getElementById('echarts'));
-            requestGraph();
+                myChart = echarts.init(document.getElementById('echarts'));
+                requestGraph();
+            }
+        );
+
+        $('.fixed-action-btn').floatingActionButton({
+            toolbarEnabled: true
         });
+
+        $(document).ready(function () {
+            $('.modal').modal();
+        });
+
+        function addSpot() {
+            $.post('/addspot', {
+                spotName: $('#spotName').val(),
+                spotIntro: $('#spotIntro').val(),
+            }, function () {
+                M.toast({html: '添加成功'});
+                requestGraph();
+                $('#spotName').val('');
+                $('#spotIntro').val('');
+            }).fail(function () {
+                M.toast({html: '操作异常'});
+            })
+        }
+
+        function addPath() {
+            $.post('/addpath', {
+                spot1name: $('#spot1name').val(),
+                spot2name: $('#spot2name').val(),
+                distance: $('#distance').val()
+            }, function () {
+                M.toast({html: '添加成功'});
+                requestGraph();
+                $('#spot1name').val('');
+                $('#spot2name').val('');
+                $('#distance').val('');
+            }).fail(function () {
+                M.toast({html: '操作异常'});
+            })
+        }
+
+        function shortestPath() {
+            if ($('#startSpotName').val() === $('#endSpotName').val()) {
+                M.toast({html: '您输入了同一景点'});
+                return;
+            }
+            $.post('/shortestpath', {
+                startSpotName: $('#startSpotName').val(),
+                endSpotName: $('#endSpotName').val()
+            }, function () {
+                requestGraph();
+                $('#startSpotName').val('');
+                $('#endSpotName').val('');
+            }).fail(function () {
+                M.toast({html: '操作异常'});
+            })
+        }
     </script>
 </div>
 </body>
