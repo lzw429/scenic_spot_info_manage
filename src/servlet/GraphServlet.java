@@ -58,6 +58,7 @@ public class GraphServlet extends BaseServlet {
         seriesContent.addProperty("layout", "force");
         JsonObject force = new JsonObject();
         force.addProperty("repulsion", 2000); // 顶点间斥力
+        force.addProperty("gravity", 0.8); // 顶点受到的向中心的引力
         seriesContent.add("force", force);
         seriesContent.addProperty("symbolSize", 50); // 顶点大小
         seriesContent.addProperty("roam", true);

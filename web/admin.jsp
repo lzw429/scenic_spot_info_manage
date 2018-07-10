@@ -88,7 +88,8 @@
             </div>
         </div>
         <div class="modal-footer"> <!--模态框底部-->
-            <a href="#!" class="modal-close waves-effect waves-green btn-flat" id="shortestPathSubmit">确定</a>
+            <a href="#!" class="modal-close waves-effect waves-green btn-flat" id="shortestPathSubmit"
+               onclick="shortestPath()">确定</a>
         </div>
     </div>
     <script type="text/javascript">
@@ -162,13 +163,17 @@
             $.post('/shortestpath', {
                 startSpotName: $('#startSpotName').val(),
                 endSpotName: $('#endSpotName').val()
-            }, function () {
-                requestGraph();
+            }, function (responseText) {
+                option_shortestpath = JSON.parse(responseText);
+                myChart.setOption(option_shortestpath);
+                console.log(responseText);
                 $('#startSpotName').val('');
                 $('#endSpotName').val('');
-            }).fail(function () {
-                M.toast({html: '操作异常'});
-            })
+            }).fail(function (response) {
+                if (response.status === 403)
+                    M.toast({html: '参数错误'});
+                else M.toast({html: '操作异常'});
+            });
         }
     </script>
 </div>
