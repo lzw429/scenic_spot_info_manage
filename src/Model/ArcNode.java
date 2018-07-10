@@ -1,3 +1,5 @@
+package Model;
+
 import java.io.Serializable;
 
 public class ArcNode implements Serializable { // 定义边信息

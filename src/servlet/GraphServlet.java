@@ -1,13 +1,22 @@
 package servlet;
 
+import Model.ArcNode;
+import Model.ManageSystem;
+import Model.VNode;
+import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
 import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 import java.io.IOException;
+import java.util.List;
+import java.util.Map;
 
+@WebServlet("/graph")
 public class GraphServlet extends BaseServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -16,11 +25,27 @@ public class GraphServlet extends BaseServlet {
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        super.doPost(request, response);
+        HttpSession session = request.getSession();
+        if (session.getAttribute("init") == null) {
+            ManageSystem.CreateGraph();
+            session.setAttribute("init", true);
+        }
+        String graphJson = getGraphJson();
+        // 输出
+        System.out.println("[GraphServlet] " + graphJson);
+        response.setContentType("text/plain");
+        response.getWriter().write(graphJson);
+    }
+
+    private String getGraphJson() {
+        Gson gson = new Gson();
+
         JsonObject echartsGraph = new JsonObject();
 
         JsonObject title = new JsonObject();
         title.addProperty("text", "景区示意图");
-        echartsGraph.addProperty("title", title.toString());
+        echartsGraph.add("title", title);
 
         echartsGraph.addProperty("animationDurationUpdate", 1500);
         echartsGraph.addProperty("animationEasingUpdate", "quinticInOut");
@@ -34,34 +59,58 @@ public class GraphServlet extends BaseServlet {
         JsonObject label = new JsonObject();
         JsonObject normal = new JsonObject();
         normal.addProperty("show", true);
-        label.addProperty("normal", normal.toString());
-        seriesContent.addProperty("label", label.toString());
+        label.add("normal", normal);
+        seriesContent.add("label", label);
         JsonArray edgeSymbol = new JsonArray();
         edgeSymbol.add("circle");
         edgeSymbol.add("line");
-        seriesContent.addProperty("edgeSymbol", edgeSymbol.toString());
+        seriesContent.add("edgeSymbol", edgeSymbol);
         JsonArray edgeSymbolSize = new JsonArray();
         edgeSymbolSize.add(4);
         edgeSymbolSize.add(10);
-        seriesContent.addProperty("edgeSymbolSize", edgeSymbolSize.toString());
+        seriesContent.add("edgeSymbolSize", edgeSymbolSize);
         JsonObject edgeLabel = new JsonObject();
         JsonObject normal1 = new JsonObject();
         JsonObject textStyle = new JsonObject();
         textStyle.addProperty("fontSize", 20);
-        normal1.addProperty("textStyle", textStyle.toString());
-        edgeLabel.addProperty("normal", normal1.toString());
-        seriesContent.addProperty("edgeLabel", edgeLabel.toString());
+        normal1.add("textStyle", textStyle);
+        edgeLabel.add("normal", normal1);
+        seriesContent.add("edgeLabel", edgeLabel);
         JsonArray data = new JsonArray();
-        // TODO 从图获取顶点信息
-        seriesContent.addProperty("data", data.toString());
+        // 从图获取顶点信息
+        for (Map.Entry<String, VNode> entry : ManageSystem.getSpots().entrySet()) {
+            JsonObject spot = new JsonObject();
+            spot.addProperty("name", entry.getKey());
+            data.add(spot);
+        }
+        seriesContent.add("data", data);
         JsonArray links = new JsonArray();
-        // TODO 从图获取弧的信息
-        seriesContent.addProperty("links", links.toString());
+        // 从图获取弧的信息
+        for (Map.Entry<String, List<ArcNode>> entry : ManageSystem.getArcs().entrySet()) {
+            String fromSpot = entry.getKey();
+            List<ArcNode> arcList = entry.getValue();
+            for (ArcNode arc : arcList) {
+                JsonObject arcJsonObject = new JsonObject();
+                arcJsonObject.addProperty("source", fromSpot);
+                arcJsonObject.addProperty("target", arc.getTo());
+                arcJsonObject.addProperty("value", arc.getDistance());
+                links.add(arcJsonObject);
+            }
+        }
+        seriesContent.add("links", links);
         JsonObject lineStyle = new JsonObject();
-        
+        JsonObject normal2 = new JsonObject();
+        normal2.addProperty("opacity", 0.9);
+        normal2.addProperty("width", 2);
+        normal2.addProperty("curveness", 0.1);
+        lineStyle.add("normal", normal2);
+        seriesContent.add("lineStyle", lineStyle);
         series.add(seriesContent);
-
-        System.out.println(echartsGraph.toString());
+        echartsGraph.add("series", series);
+        String res = gson.toJson(echartsGraph);
+        System.out.println(res);
+        return res;
     }
 }
+
 

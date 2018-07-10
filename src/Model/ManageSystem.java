@@ -1,30 +1,53 @@
+package Model;
+
+import Util.Util;
+
 import java.io.BufferedReader;
-import java.io.FileReader;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.PriorityBlockingQueue;
 
 public class ManageSystem {
-    private HashMap<String, List<ArcNode>> arcs;
-    private HashMap<String, VNode> spots;
-    private HashMap<Integer, Car> cars;
-    private Stack<Car> parkingLot;
-    private Stack<Car> tempParking;
-    private Queue<Car> pavement;
-    private final int parkingNum = 5; // 停车场大小
-    private Comparator<VNode> spotDistanceComparator = (o1, o2) -> Integer.compare(o1.getTotalDist() - o2.getTotalDist(), 0); // 距离比较
-    private SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-    private int shortestTourLen = Integer.MAX_VALUE;
+    private static HashMap<String, List<ArcNode>> arcs = new HashMap<>();
+    private static HashMap<String, VNode> spots = new HashMap<>();
+    private static HashMap<Integer, Car> cars = new HashMap<>();
+    private static Stack<Car> parkingLot = new Stack<>();
+    private static Stack<Car> tempParking = new Stack<>();
+    private static Queue<Car> pavement = new LinkedList<>();
+    private static final int parkingNum = 5; // 停车场大小
+    private static Comparator<VNode> spotDistanceComparator = (o1, o2) -> Integer.compare(o1.getTotalDist() - o2.getTotalDist(), 0); // 距离比较
+    private static SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+    private static int shortestTourLen = Integer.MAX_VALUE;
 
-    private ManageSystem() {
-        arcs = new HashMap<>();
-        spots = new HashMap<>();
-        cars = new HashMap<>();
-        parkingLot = new Stack<>();
-        tempParking = new Stack<>();
-        pavement = new LinkedList<>();
+    public static HashMap<String, List<ArcNode>> getArcs() {
+        return arcs;
+    }
+
+    public static HashMap<String, VNode> getSpots() {
+        return spots;
+    }
+
+    public static HashMap<Integer, Car> getCars() {
+        return cars;
+    }
+
+    public static Stack<Car> getParkingLot() {
+        return parkingLot;
+    }
+
+    public static Stack<Car> getTempParking() {
+        return tempParking;
+    }
+
+    public static Queue<Car> getPavement() {
+        return pavement;
+    }
+
+    private ManageSystem() { // 构造方法
     }
 
     public static void main(String[] args) throws ParseException {
@@ -92,12 +115,13 @@ public class ManageSystem {
         System.out.println("请选择：");
     }
 
-    private void CreateGraph() {
+    public static void CreateGraph() {
         String line;
-        BufferedReader reader;
         try {
             String filePath = "C:\\Users\\舒意恒\\Documents\\GitHub\\scenic_spot_info_manage\\data\\graph.txt";
-            reader = new BufferedReader(new FileReader(filePath));
+            FileInputStream fileInputStream = new FileInputStream(filePath);
+            InputStreamReader inputStreamReader = new InputStreamReader(fileInputStream, "UTF-8");
+            BufferedReader reader = new BufferedReader(inputStreamReader);
             while ((line = reader.readLine()) != null) {
                 String[] edge = line.split("——");
                 // edge[0]、edge[1]是顶点，edge[2]是距离权值
@@ -141,7 +165,7 @@ public class ManageSystem {
         }
     }
 
-    private void addArc(String VNodeName, ArcNode arc) {
+    private static void addArc(String VNodeName, ArcNode arc) {
         if (arcs.containsKey(VNodeName)) {
             arcs.get(VNodeName).add(arc);
         } else {
@@ -173,7 +197,7 @@ public class ManageSystem {
         arcs.get(VNodeName2).removeIf(arcNode -> arcNode.getTo().equals(VNodeName1));
     }
 
-    private void addSpot(int number, String VNodeName) {
+    private static void addSpot(int number, String VNodeName) {
         if (!spots.containsKey(VNodeName))
             spots.put(VNodeName, new VNode(number, VNodeName));
     }

@@ -1,3 +1,7 @@
+package Model;
+
+import Util.Util;
+
 import java.io.Serializable;
 
 public class VNode implements Serializable { // 定义顶点信息

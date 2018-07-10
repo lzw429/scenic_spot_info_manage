@@ -1,3 +1,5 @@
+package Util;
+
 public class Util {
     public static String spotNumberToName(int number) {
         String res = "";
@@ -80,7 +82,7 @@ public class Util {
 //        // 如果所有顶点都被添加到Hamilton环
 //        if (pos == spots.size()) {
 //            // 如果最后一个顶点与首个顶点间有边
-//            ArcNode arc = getArc(hamCycle[pos - 1], hamCycle[0]);
+//            Model.ArcNode arc = getArc(hamCycle[pos - 1], hamCycle[0]);
 //            if (arc != null) {
 //                minLen += arc.getDistance();
 //                System.out.println("最短环游长度：" + minLen + " " + (backTrackingCount++));
@@ -89,7 +91,7 @@ public class Util {
 //            return false;
 //        }
 //        // 在Hamilton环中尝试不同的候选顶点，跳过0因为开始时已添加
-//        for (Map.Entry<String, VNode> entry : spots.entrySet()) {
+//        for (Map.Entry<String, Model.VNode> entry : spots.entrySet()) {
 //            String curSpot = entry.getKey();
 //            if (isSafe(curSpot, hamCycle, pos)) {
 //                hamCycle[pos] = curSpot;
@@ -115,9 +117,9 @@ public class Util {
 //                shortestTourLen = minLen;
 //        } else {
 //            for (int i = pos; i < len; i++) {
-//                Util.swap(hamCycle, pos, i);
+//                Util.Util.swap(hamCycle, pos, i);
 //                hamCyclePermutation(hamCycle, pos + 1, len);
-//                Util.swap(hamCycle, pos, i);
+//                Util.Util.swap(hamCycle, pos, i);
 //            }
 //        }
 //    }
