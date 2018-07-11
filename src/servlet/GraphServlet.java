@@ -30,7 +30,7 @@ public class GraphServlet extends BaseServlet {
         super.doPost(request, response);
         HttpSession session = request.getSession();
         if (session.getAttribute("init") == null) {
-            ManageSystem.CreateGraph();
+            ManageSystem.dbCreateGraph();
             session.setAttribute("init", true);
         }
         String graphJson = getGraphJson();

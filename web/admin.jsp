@@ -36,6 +36,9 @@
             <li class="waves-effect waves-light"><a href="#tourPathModal" class="modal-trigger"><i
                     class="material-icons">map</i>导游路线图</a>
             </li>
+            <li class="waves-effect waves-light"><a href="#announcementModal" class="modal-trigger"><i
+                    class="material-icons">announcement</i>设置公告</a>
+            </li>
         </ul>
     </div>
     <div id="addSpotModal" class="modal bottom-sheet"> <!-- 添加景点 模态框-->
@@ -107,6 +110,20 @@
         <div class="modal-footer"> <!--模态框底部-->
             <a href="#!" class="modal-close waves-effect waves-green btn-flat" id="tourPathSubmit"
                onclick="tourPath()">确定</a>
+        </div>
+    </div>
+
+    <div id="announcementModal" class="modal bottom-sheet"> <!-- 设置公告 模态框-->
+        <div class="modal-content"> <!--模态框内容-->
+            <h4>设置公告</h4>
+            <div class="input-field col s9">
+                <textarea id="announcementTextarea" class="materialize-textarea"></textarea>
+                <label for="announcementTextarea">公告内容</label>
+            </div>
+        </div>
+        <div class="modal-footer"> <!--模态框底部-->
+            <a href="#!" class="modal-close waves-effect waves-green btn-flat" id="announcementSubmit"
+               onclick="announcement()">确定</a>
         </div>
     </div>
 
@@ -210,6 +227,21 @@
                 if (response.status === 403)
                     M.toast({html: '参数错误'});
                 else M.toast({html: '操作异常'});
+            });
+        }
+
+        function announcement() {
+            if ($('#announcementTextarea').val() === "") {
+                M.toast({html: '请输入公告内容'});
+                return;
+            }
+            $.post('/announcement', {
+                announcement: $('#announcementTextarea').val()
+            }, function (responseText) {
+                M.toast({html: '设置成功'});
+                $('#announcementTextarea').val('');
+            }).fail(function (response) {
+                M.toast({html: '操作异常'});
             });
         }
     </script>

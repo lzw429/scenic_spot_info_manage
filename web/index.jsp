@@ -32,24 +32,20 @@
                         <span class="card-title">景区欢迎您</span>
                     </div>
                     <div class="card-content">
-                        <% if (session.getAttribute("announcement") == null) { %>
+                        <% if (application.getAttribute("announcement") == null) { %>
                         <p>7月13日 星期五</p>
                         <p>沈阳市 24℃~32℃</p>
-                        <% } else session.getAttribute("announcement"); %>
+                        <% } else { %>
+                        <p>
+                            <%=application.getAttribute("announcement")%>
+                        </p>
+                        <%} %>
                     </div>
                 </div>
             </div>
             <div id="test2" class="col s12">
                 <ul class="collapsible" id="spotSortList">
-                    <li>
-                        <div class="collapsible-header">First</div>
-                        <div class="collapsible-body">
-                            <p>Lorem ipsum dolor sit amet.</p>
-                            <p>欢迎度：</p>
-                            <p>卫生间：</p>
-                            <p>休息区：</p>
-                        </div>
-                    </li>
+
                 </ul>
 
             </div>
@@ -189,8 +185,9 @@
     }
 
     function spotSort() {
-        $post('/spotsort', {}, function (responseText) {
+        $.post('/spotsort', {}, function (responseText) {
             // 渲染推荐页
+            $('#spotSortList').html(responseText);
         }).fail(function (response) {
             M.toast({html: '连接异常'});
         });

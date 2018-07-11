@@ -131,10 +131,10 @@ public class GraphService {
     public boolean arcLessThan(VNode v1, VNode v2) {
         int size1 = 0;
         int size2 = 0;
-        if (ManageSystem.getArcs().get(v1) != null)
-            size1 = ManageSystem.getArcs().get(v1).size();
-        if (ManageSystem.getArcs().get(v2) != null)
-            size2 = ManageSystem.getArcs().get(v2).size();
+        if (ManageSystem.getArcs().get(v1.getName()) != null)
+            size1 = ManageSystem.getArcs().get(v1.getName()).size();
+        if (ManageSystem.getArcs().get(v2.getName()) != null)
+            size2 = ManageSystem.getArcs().get(v2.getName()).size();
         return (size1 - size2) < 0;
     }
 
@@ -148,18 +148,20 @@ public class GraphService {
 
     private void qsort(VNode[] arr, int low, int high) {
         if (low < high) {
-            int pivot = partition(arr, low, high);        //将数组分为两部分
-            qsort(arr, low, pivot - 1);                   //递归排序左子数组
-            qsort(arr, pivot + 1, high);                  //递归排序右子数组
+            int pivot = partition(arr, low, high); // 将数组分为两部分
+            qsort(arr, low, pivot - 1);       // 递归排序左子数组
+            qsort(arr, pivot + 1, high);       // 递归排序右子数组
         }
     }
 
     private int partition(VNode[] arr, int low, int high) {
         VNode pivot = arr[low];
         while (low < high) {
-            while (low < high && !arcLessThan(arr[high], pivot)) --high;
+            while (low < high && !arcMoreThan(arr[high], pivot))
+                --high;
             arr[low] = arr[high];
-            while (low < high && !arcMoreThan(arr[low], pivot)) ++low;
+            while (low < high && !arcLessThan(arr[low], pivot))
+                ++low;
             arr[high] = arr[low];
         }
         arr[low] = pivot;

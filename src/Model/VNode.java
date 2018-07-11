@@ -1,7 +1,5 @@
 package Model;
 
-import Util.Util;
-
 import java.io.Serializable;
 
 public class VNode implements Serializable { // 定义顶点信息
@@ -16,11 +14,6 @@ public class VNode implements Serializable { // 定义顶点信息
     private boolean visited = false;
     private String fromSpot = null;
 
-    VNode(int number) {
-        this.number = number;
-        this.name = Util.spotNumberToName(number);
-    }
-
     public VNode(String name) {
         this.name = name;
     }
@@ -28,6 +21,11 @@ public class VNode implements Serializable { // 定义顶点信息
     VNode(int number, String name) {
         this.number = number;
         this.name = name;
+    }
+
+    public VNode(String name, String intro) {
+        this.name = name;
+        this.intro = intro;
     }
 
     public int getNumber() {

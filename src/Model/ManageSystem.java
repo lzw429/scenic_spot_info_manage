@@ -1,6 +1,6 @@
 package Model;
 
-import Util.Util;
+import dao.GraphDao;
 
 import java.io.BufferedReader;
 import java.io.FileInputStream;
@@ -115,6 +115,11 @@ public class ManageSystem {
         System.out.println("请选择：");
     }
 
+    public static void dbCreateGraph() {
+        GraphDao graphDao = new GraphDao();
+        graphDao.createGraph();
+    }
+
     public static void CreateGraph() {
         String line;
         try {
@@ -125,17 +130,13 @@ public class ManageSystem {
             while ((line = reader.readLine()) != null) {
                 String[] edge = line.split("——");
                 // edge[0]、edge[1]是顶点，edge[2]是距离权值
-                int number1 = Integer.parseInt(edge[0]);
-                int number2 = Integer.parseInt(edge[1]);
+                String name1 = edge[0];
+                String name2 = edge[1];
                 int distance = Integer.parseInt(edge[2]);
-                String name1 = Util.spotNumberToName(number1);
-                String name2 = Util.spotNumberToName(number2);
-                ArcNode arc1 = new ArcNode(name2, distance);
-                ArcNode arc2 = new ArcNode(name1, distance);
-                addArc(name1, arc1);
-                addArc(name2, arc2);
-                addSpot(number1, name1);
-                addSpot(number1, name2);
+                addArc(name1, new ArcNode(name2, distance));
+                addArc(name2, new ArcNode(name1, distance));
+                addSpot(name1);
+                addSpot(name2);
             }
             reader.close();
         } catch (IOException e) {
@@ -197,9 +198,15 @@ public class ManageSystem {
         arcs.get(VNodeName2).removeIf(arcNode -> arcNode.getTo().equals(VNodeName1));
     }
 
-    private static void addSpot(int number, String VNodeName) {
+    private static void addSpot(String VNodeName) {
         if (!spots.containsKey(VNodeName))
-            spots.put(VNodeName, new VNode(number, VNodeName));
+            spots.put(VNodeName, new VNode(VNodeName));
+    }
+
+    public static void addSpot(String VNodeName, String intro) {
+        if (!spots.containsKey(VNodeName)) {
+            spots.put(VNodeName, new VNode(VNodeName, intro));
+        }
     }
 
     private void deleteSpot(String VNodeName) {
@@ -234,17 +241,7 @@ public class ManageSystem {
         System.out.println("请输入新增景点名称：");
         Scanner sc = new Scanner(System.in);
         String name = sc.next();
-
-        addSpot(getMaxSpotNum() + 1, name);
-    }
-
-    private int getMaxSpotNum() {
-        int res = Integer.MIN_VALUE;
-        for (Map.Entry<String, VNode> entry : spots.entrySet()) {
-            if (entry.getValue().getNumber() > res)
-                res = entry.getValue().getNumber();
-        }
-        return res;
+        addSpot(name);
     }
 
     private void DeleteSpot() { // 删除景点
@@ -260,8 +257,8 @@ public class ManageSystem {
         Scanner sc = new Scanner(System.in);
         String line = sc.nextLine();
         String[] arcStr = line.split(" ");
-        this.addArc(arcStr[0], new ArcNode(arcStr[1], Integer.parseInt(arcStr[2])));
-        this.addArc(arcStr[1], new ArcNode(arcStr[0], Integer.parseInt(arcStr[2])));
+        addArc(arcStr[0], new ArcNode(arcStr[1], Integer.parseInt(arcStr[2])));
+        addArc(arcStr[1], new ArcNode(arcStr[0], Integer.parseInt(arcStr[2])));
     }
 
     private void DeleteArc() { // 添加路线

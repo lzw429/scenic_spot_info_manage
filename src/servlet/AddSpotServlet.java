@@ -2,6 +2,7 @@ package servlet;
 
 import Model.ManageSystem;
 import Model.VNode;
+import dao.GraphDao;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -12,6 +13,8 @@ import java.io.IOException;
 
 @WebServlet("/addspot")
 public class AddSpotServlet extends BaseServlet {
+    GraphDao graphDao = new GraphDao();
+
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         doPost(request, response);
@@ -30,6 +33,7 @@ public class AddSpotServlet extends BaseServlet {
             VNode spot = new VNode(spotName);
             spot.setIntro(spotIntro);
             ManageSystem.getSpots().put(spotName, spot);
+            graphDao.addSpot(spotName, spotIntro);
             System.out.println("AddSpotServlet: 添加景点成功");
         }
     }
