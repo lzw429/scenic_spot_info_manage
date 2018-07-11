@@ -48,7 +48,9 @@ public class GraphServlet extends BaseServlet {
         JsonObject title = new JsonObject();
         title.addProperty("text", "景区示意图");
         echartsGraph.add("title", title);
-
+        JsonObject tooltip = new JsonObject();
+        tooltip.addProperty("trigger", "item");
+        echartsGraph.add("tooltip", tooltip);
         echartsGraph.addProperty("animationDurationUpdate", 1500);
         echartsGraph.addProperty("animationEasingUpdate", "quinticInOut");
 

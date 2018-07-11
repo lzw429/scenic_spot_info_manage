@@ -33,7 +33,8 @@
             <li class="waves-effect waves-light"><a href="#shortestPathModal" class="modal-trigger"><i
                     class="material-icons">navigation</i>最短路线规划</a>
             </li>
-            <li class="waves-effect waves-light"><a href="#!" id="tourSortGraphButton"><i class="material-icons">map</i>导游路线图</a>
+            <li class="waves-effect waves-light"><a href="#tourPathModal" class="modal-trigger"><i
+                    class="material-icons">map</i>导游路线图</a>
             </li>
         </ul>
     </div>
@@ -54,6 +55,7 @@
                onclick="addSpot()">确定</a>
         </div>
     </div>
+
     <div id="addPathModal" class="modal bottom-sheet"> <!-- 添加路线 模态框-->
         <div class="modal-content"> <!--模态框内容-->
             <h4>添加路线</h4>
@@ -75,6 +77,7 @@
                onclick="addPath()">确定</a>
         </div>
     </div>
+
     <div id="shortestPathModal" class="modal bottom-sheet"> <!-- 最短路线规划 模态框-->
         <div class="modal-content"> <!--模态框内容-->
             <h4>最短路线规划</h4>
@@ -92,6 +95,21 @@
                onclick="shortestPath()">确定</a>
         </div>
     </div>
+
+    <div id="tourPathModal" class="modal bottom-sheet"> <!-- 导游路线图 模态框-->
+        <div class="modal-content"> <!--模态框内容-->
+            <h4>导游路线图</h4>
+            <div class="input-field col s3">
+                <input id="rootSpotName" type="text" class="validate">
+                <label for="rootSpotName">出发景点</label>
+            </div>
+        </div>
+        <div class="modal-footer"> <!--模态框底部-->
+            <a href="#!" class="modal-close waves-effect waves-green btn-flat" id="tourPathSubmit"
+               onclick="tourPath()">确定</a>
+        </div>
+    </div>
+
     <script type="text/javascript">
         myChart = {};
         option = {};
@@ -169,6 +187,25 @@
                 console.log(responseText);
                 $('#startSpotName').val('');
                 $('#endSpotName').val('');
+            }).fail(function (response) {
+                if (response.status === 403)
+                    M.toast({html: '参数错误'});
+                else M.toast({html: '操作异常'});
+            });
+        }
+
+        function tourPath() {
+            if ($('#rootSpotName').val() === "") {
+                M.toast({html: '请输入出发景点'});
+                return;
+            }
+            $.post('/tour', {
+                rootSpotName: $('#rootSpotName').val()
+            }, function (responseText) {
+                option_tourpath = JSON.parse(responseText);
+                myChart.setOption(option_tourpath);
+                console.log(responseText);
+                $('#rootSpotName').val('');
             }).fail(function (response) {
                 if (response.status === 403)
                     M.toast({html: '参数错误'});

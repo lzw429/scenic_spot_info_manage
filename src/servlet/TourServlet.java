@@ -11,8 +11,8 @@ import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.util.Stack;
 
-@WebServlet("/shortestpath")
-public class ShortestPathServlet extends BaseServlet {
+@WebServlet("/tour")
+public class TourServlet extends BaseServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         doPost(request, response);
@@ -25,17 +25,19 @@ public class ShortestPathServlet extends BaseServlet {
         GraphService graphService = new GraphService();
         assert session.getAttribute("init") != null;
 
-        String startSpot = request.getParameter("startSpotName");
-        String endSpot = request.getParameter("endSpotName");
-        if (!ManageSystem.getSpots().containsKey(startSpot) || !ManageSystem.getSpots().containsKey(endSpot)) {
-            System.out.println("ShortestPathServlet: 地点不存在");
+        String rootSpot = request.getParameter("rootSpotName");
+
+        if (!ManageSystem.getSpots().containsKey(rootSpot)) {
+            System.out.println("TourServlet: 地点不存在");
             response.sendError(403);
         } else {
             Stack<String> path = new Stack<>();
-            ManageSystem.MiniDistance_Dijkstra(startSpot, endSpot, path); // 最短路算法
-            String shortestPathJson = graphService.getPathJson(path,"shortest");
-            System.out.println("ShortestPathServlet: " + shortestPathJson);
-            response.getWriter().write(shortestPathJson);
+            ManageSystem.createTourSortGraph(rootSpot, path);
+            String tourPathJson = graphService.getPathJson(path, "tour");
+            System.out.println("TourServlet: " + tourPathJson);
+            response.getWriter().write(tourPathJson);
         }
     }
+
+
 }

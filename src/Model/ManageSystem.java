@@ -429,7 +429,7 @@ public class ManageSystem {
         Scanner sc = new Scanner(System.in);
         root = sc.next();
         List<String> tourPath = new ArrayList<>();
-        this.createTourSortGraph(root, tourPath);
+        createTourSortGraph(root, tourPath);
         for (String string : tourPath) {
             System.out.print(string + "->");
         }
@@ -547,7 +547,7 @@ public class ManageSystem {
      *
      * @param root 最小生成树的根结点
      */
-    public void createTourSortGraph(String root, List<String> path) {
+    public static void createTourSortGraph(String root, List<String> path) {
         if (spots.get(root) == null) // 根结点为空
             return;
         Set<String> tree = new HashSet<>();
