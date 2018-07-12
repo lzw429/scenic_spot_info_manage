@@ -36,6 +36,7 @@ public class GraphDao {
             }
             rs.close();
             DBUtil.safeClose(stm);
+            System.out.println("GraphDao: 建图成功");
         } catch (Exception e) {
             e.printStackTrace();
             System.out.println("GraphDao: 建图失败");
@@ -54,6 +55,7 @@ public class GraphDao {
             stm.setString(2, toSpot);
             stm.setInt(3, distance);
             stm.executeUpdate();
+            System.out.println("GraphDao: 添加路线成功");
         } catch (Exception e) {
             e.printStackTrace();
             System.out.println("GraphDao: 添加路线失败");
@@ -71,6 +73,7 @@ public class GraphDao {
             stm.setString(1, name);
             stm.setString(2, intro);
             stm.executeUpdate();
+            System.out.println("GraphDao: 添加景点成功");
         } catch (Exception e) {
             e.printStackTrace();
             System.out.println("GraphDao: 添加景点失败");
@@ -90,6 +93,7 @@ public class GraphDao {
             stm.setString(3, spot2);
             stm.setString(4, spot1);
             stm.executeUpdate();
+            System.out.println("GraphDao: 删除路线成功");
         } catch (Exception e) {
             e.printStackTrace();
             System.out.println("GraphDao: 删除路线失败");
@@ -112,6 +116,7 @@ public class GraphDao {
             stm.setString(1, spot);
             stm.setString(2, spot);
             stm.executeUpdate();
+            System.out.println("GraphDao: 删除景点成功");
         } catch (Exception e) {
             e.printStackTrace();
             System.out.println("GraphDao: 删除景点失败");

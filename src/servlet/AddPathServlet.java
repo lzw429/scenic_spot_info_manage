@@ -34,7 +34,6 @@ public class AddPathServlet extends BaseServlet {
             ManageSystem.addArc(spot1, new ArcNode(spot2, distance));
             ManageSystem.addArc(spot2, new ArcNode(spot1, distance));
             graphDao.addPath(spot1, spot2, distance);
-            graphDao.addPath(spot2, spot1, distance);
             System.out.println("AddPathServlet: 添加成功");
         }
     }
