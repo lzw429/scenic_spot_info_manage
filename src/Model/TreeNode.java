@@ -1,9 +1,9 @@
 package Model;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public class TreeNode<T> implements Serializable {
     private T val;
@@ -75,7 +75,7 @@ public class TreeNode<T> implements Serializable {
     }
 
     public List<T> preorderTraversal() { // 遍历以this为根结点的树
-        List<T> res = new ArrayList<>();
+        List<T> res = new CopyOnWriteArrayList<>();
         Stack<TreeNode<T>> stack = new Stack<>();
         TreeNode<T> cur = this;
         while (!stack.empty() || cur != null) {

@@ -2,6 +2,7 @@ package servlet;
 
 import Model.ArcNode;
 import Model.ManageSystem;
+import Model.Transaction;
 import dao.GraphDao;
 
 import javax.servlet.ServletException;
@@ -33,6 +34,8 @@ public class AddPathServlet extends BaseServlet {
         } else { // 路径不存在，添加
             ManageSystem.addArc(spot1, new ArcNode(spot2, distance));
             ManageSystem.addArc(spot2, new ArcNode(spot1, distance));
+            Transaction transaction = new Transaction(spot1, spot2, Transaction.ADD_ARC);
+            ManageSystem.getTransactions().add(transaction);
             graphDao.addPath(spot1, spot2, distance);
             System.out.println("AddPathServlet: 添加成功");
         }

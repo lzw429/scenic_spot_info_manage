@@ -32,10 +32,12 @@ public class ShortestPathServlet extends BaseServlet {
             response.sendError(403);
         } else {
             Stack<String> path = new Stack<>();
-            ManageSystem.MiniDistance_Dijkstra(startSpot, endSpot, path); // 最短路算法
-            String shortestPathJson = graphService.getPathJson(path,"shortest");
-            System.out.println("ShortestPathServlet: " + shortestPathJson);
-            response.getWriter().write(shortestPathJson);
+            int shortestDist = ManageSystem.MiniDistance_Dijkstra(startSpot, endSpot, path); // 最短路算法
+            if (shortestDist != Integer.MAX_VALUE) {
+                String shortestPathJson = graphService.getPathJson(path, "shortest",shortestDist);
+                System.out.println("ShortestPathServlet: " + shortestPathJson);
+                response.getWriter().write(shortestPathJson);
+            }
         }
     }
 }

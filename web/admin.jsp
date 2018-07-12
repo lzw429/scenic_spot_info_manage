@@ -207,7 +207,8 @@
                 spotName: $('#spotName').val(),
                 spotIntro: $('#spotIntro').val(),
             }, function () {
-                M.toast({html: '添加成功'});
+                var toastHTML = '<span>添加成功</span><button class="btn-flat toast-action revert" id="revertAddSpot" type="submit" onclick="revert()">撤销</button>';
+                M.toast({html: toastHTML, displayLength: 6000});
                 requestGraph();
                 $('#spotName').val('');
                 $('#spotIntro').val('');
@@ -226,7 +227,8 @@
                 spot2name: $('#spot2name').val(),
                 distance: $('#distance').val()
             }, function () {
-                M.toast({html: '添加成功'});
+                var toastHTML = '<span>添加成功</span><button class="btn-flat toast-action revert" id="revertAddPath" type="submit" onclick="revert()">撤销</button>';
+                M.toast({html: toastHTML, displayLength: 6000});
                 requestGraph();
                 $('#spot1name').val('');
                 $('#spot2name').val('');
@@ -299,7 +301,8 @@
             $.post('/deletespot', {
                 spotName: $('#deleteSpotName').val()
             }, function () {
-                M.toast({html: '删除成功'});
+                var toastHTML = '<span>删除成功</span><button class="btn-flat toast-action revert" id="revertDeleteSpot" type="submit" onclick="revert()">撤销</button>';
+                M.toast({html: toastHTML, displayLength: 6000});
                 requestGraph();
                 $('#deleteSpotName').val();
             }).fail(function () {
@@ -316,10 +319,21 @@
                 spot1name: $('#deleteStartSpot').val(),
                 spot2name: $('#deleteEndSpot').val()
             }, function () {
-                M.toast({html: '删除成功'});
+                var toastHTML = '<span>删除成功</span><button class="btn-flat toast-action revert" id="revertDeletePath" type="submit" onclick="revert()">撤销</button>';
+                M.toast({html: toastHTML, displayLength: 6000});
                 requestGraph();
                 $('#deleteStartSpot').val('');
                 $('#deleteEndSpot').val('');
+            }).fail(function (response) {
+                M.toast({html: '操作异常'});
+            });
+        }
+
+        function revert() { // 撤销操作
+            $.post('/revert', {}, function () {
+                requestGraph();
+                M.Toast.dismissAll();
+                M.toast({html: "撤销成功"});
             }).fail(function (response) {
                 M.toast({html: '操作异常'});
             });

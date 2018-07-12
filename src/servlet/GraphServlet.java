@@ -104,6 +104,7 @@ public class GraphServlet extends BaseServlet {
                     arcJsonObject.addProperty("source", fromSpot);
                     arcJsonObject.addProperty("target", arc.getTo());
                     arcJsonObject.addProperty("value", arc.getDistance());
+                    arcJsonObject.addProperty("label", fromSpot + " - " + arc.getTo() + ": " + arc.getDistance());
                     arcNodeSet.add(ManageSystem.getArc(fromSpot, arc.getTo()));
                     links.add(arcJsonObject);
                 }
@@ -117,10 +118,10 @@ public class GraphServlet extends BaseServlet {
         normal2.addProperty("curveness", 0.1);
         lineStyle.add("normal", normal2);
         seriesContent.add("lineStyle", lineStyle);
+        JsonObject tooltip1 = new JsonObject();
+        seriesContent.add("tooltip", tooltip1); // 前端需要生成回调函数
         series.add(seriesContent);
         echartsGraph.add("series", series);
         return gson.toJson(echartsGraph);
     }
 }
-
-

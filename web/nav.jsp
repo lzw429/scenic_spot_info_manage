@@ -10,7 +10,7 @@
     <div class="nav-wrapper blue row" style="margin: 0">
         <!-- Logo -->
         <div class="col s3">
-            <a class="brand-logo">
+            <a class="brand-logo" id="logo" onclick="requestGraph()" href="">
                 <i class="material-icons">looks</i>智慧景区</a>
         </div>
         <!-- 搜索框 -->

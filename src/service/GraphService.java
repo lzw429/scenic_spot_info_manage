@@ -10,14 +10,19 @@ import com.google.gson.JsonObject;
 import java.util.*;
 
 public class GraphService {
-    public String getPathJson(Stack<String> path, String mode) {
+    public String getPathJson(Stack<String> path, String mode, int dist) {
         Set<String> spotSet = new HashSet<>(path);
         Gson gson = new Gson();
 
         JsonObject echartsGraph = new JsonObject();
 
         JsonObject title = new JsonObject();
-        title.addProperty("text", "景区示意图");
+        String text = "景区示意图";
+        if (mode.equals("shortest"))
+            text = "最短路线规划：距离 " + dist;
+        else if (mode.equals("tour"))
+            text = "导游路线图";
+        title.addProperty("text", text);
         echartsGraph.add("title", title);
         echartsGraph.addProperty("tooltip", "item");
         echartsGraph.addProperty("animationDurationUpdate", 1500);

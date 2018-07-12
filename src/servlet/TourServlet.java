@@ -33,7 +33,7 @@ public class TourServlet extends BaseServlet {
         } else {
             Stack<String> path = new Stack<>();
             ManageSystem.createTourSortGraph(rootSpot, path);
-            String tourPathJson = graphService.getPathJson(path, "tour");
+            String tourPathJson = graphService.getPathJson(path, "tour", 115);
             System.out.println("TourServlet: " + tourPathJson);
             response.getWriter().write(tourPathJson);
         }

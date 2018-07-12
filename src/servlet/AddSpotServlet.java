@@ -1,6 +1,7 @@
 package servlet;
 
 import Model.ManageSystem;
+import Model.Transaction;
 import Model.VNode;
 import dao.GraphDao;
 
@@ -34,6 +35,8 @@ public class AddSpotServlet extends BaseServlet {
             spot.setIntro(spotIntro);
             ManageSystem.getSpots().put(spotName, spot);
             graphDao.addSpot(spotName, spotIntro);
+            Transaction transaction = new Transaction(spotName, Transaction.ADD_SPOT);
+            ManageSystem.getTransactions().add(transaction);
             System.out.println("AddSpotServlet: 添加景点成功");
         }
     }

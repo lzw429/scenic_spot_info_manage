@@ -107,6 +107,10 @@
     myChart = {};
     option = {};
 
+    formatter = function formatter(x) {
+        return x.data.label;
+    };
+
     function requestGraph() {
         $.ajax({
             url: '${pageContext.request.contextPath}/graph',
@@ -114,6 +118,7 @@
             dataType: "text",
             success: function (responseText) {
                 option = JSON.parse(responseText);
+                option.series[0].tooltip = formatter;
                 myChart.setOption(option);
                 console.log(responseText);
             }

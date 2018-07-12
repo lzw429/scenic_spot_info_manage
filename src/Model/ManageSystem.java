@@ -9,6 +9,7 @@ import java.io.InputStreamReader;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.PriorityBlockingQueue;
 
 public class ManageSystem {
@@ -22,6 +23,8 @@ public class ManageSystem {
     private static Comparator<VNode> spotDistanceComparator = (o1, o2) -> Integer.compare(o1.getTotalDist() - o2.getTotalDist(), 0); // 距离比较
     private static SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
     private static int shortestTourLen = Integer.MAX_VALUE;
+
+    private static Stack<Transaction> transactions = new Stack<>();
 
     public static HashMap<String, List<ArcNode>> getArcs() {
         return arcs;
@@ -45,6 +48,14 @@ public class ManageSystem {
 
     public static Queue<Car> getPavement() {
         return pavement;
+    }
+
+    public static Stack<Transaction> getTransactions() {
+        return transactions;
+    }
+
+    public static void setTransactions(Stack<Transaction> transactions) {
+        ManageSystem.transactions = transactions;
     }
 
     private ManageSystem() { // 构造方法
@@ -170,7 +181,7 @@ public class ManageSystem {
         if (arcs.containsKey(VNodeName)) {
             arcs.get(VNodeName).add(arc);
         } else {
-            ArrayList<ArcNode> list = new ArrayList<>();
+            List<ArcNode> list = new CopyOnWriteArrayList<>(); // 线程安全
             list.add(arc);
             arcs.put(VNodeName, list);
         }
@@ -432,7 +443,7 @@ public class ManageSystem {
         System.out.println("请输入游览起始景点：");
         Scanner sc = new Scanner(System.in);
         root = sc.next();
-        List<String> tourPath = new ArrayList<>();
+        List<String> tourPath = new CopyOnWriteArrayList<>();
         createTourSortGraph(root, tourPath);
         for (String string : tourPath) {
             System.out.print(string + "->");
