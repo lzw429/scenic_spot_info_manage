@@ -1,6 +1,5 @@
 package servlet;
 
-import Model.ArcNode;
 import Model.ManageSystem;
 import dao.GraphDao;
 
@@ -11,9 +10,9 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
 
-@WebServlet("/addpath")
-public class AddPathServlet extends BaseServlet {
-    GraphDao graphDao = new GraphDao();
+@WebServlet("/deletepath")
+public class DeletePathServlet extends BaseServlet {
+    private GraphDao graphDao = new GraphDao();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -27,15 +26,12 @@ public class AddPathServlet extends BaseServlet {
         assert session.getAttribute("init") != null;
         String spot1 = request.getParameter("spot1name");
         String spot2 = request.getParameter("spot2name");
-        int distance = Integer.parseInt(request.getParameter("distance"));
-        if (ManageSystem.getArc(spot1, spot2) != null) { // 路径已经存在
+        if (ManageSystem.getArc(spot1, spot2) == null) { // 路径不存在
             response.sendError(403);
-        } else { // 路径不存在，添加
-            ManageSystem.addArc(spot1, new ArcNode(spot2, distance));
-            ManageSystem.addArc(spot2, new ArcNode(spot1, distance));
-            graphDao.addPath(spot1, spot2, distance);
-            graphDao.addPath(spot2, spot1, distance);
-            System.out.println("AddPathServlet: 添加成功");
+        } else { // 路径存在，删除
+            ManageSystem.deleteArc(spot1, spot2);
+            graphDao.deleteArc(spot1, spot2);
+            System.out.println("DeletePathServlet: 删除路线成功");
         }
     }
 }

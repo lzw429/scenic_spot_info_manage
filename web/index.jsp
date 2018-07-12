@@ -9,7 +9,7 @@
 <html>
 <head>
     <%@ include file="header.jsp" %>
-    <title>景区信息查询</title>
+    <title>智慧景区</title>
 </head>
 <body>
 <!-- Navbar goes here -->
@@ -29,7 +29,7 @@
                 <div class="card">
                     <div class="card-image">
                         <img src="img/sample-1.jpg">
-                        <span class="card-title">景区欢迎您</span>
+                        <span class="card-title">智慧景区欢迎您</span>
                     </div>
                     <div class="card-content">
                         <% if (application.getAttribute("announcement") == null) { %>

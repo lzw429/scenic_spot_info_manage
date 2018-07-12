@@ -79,4 +79,45 @@ public class GraphDao {
             DBUtil.safeClose(conn);
         }
     }
+
+    public void deleteArc(String spot1, String spot2) {
+        PreparedStatement stm = null;
+        try {
+            conn = DBUtil.connectDB();
+            stm = conn.prepareStatement("DELETE FROM scenic_spot.arcs WHERE (fromSpot=? AND toSpot = ?) OR (fromSpot = ? AND toSpot = ?)");
+            stm.setString(1, spot1);
+            stm.setString(2, spot2);
+            stm.setString(3, spot2);
+            stm.setString(4, spot1);
+            stm.executeUpdate();
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.out.println("GraphDao: 删除路线失败");
+        } finally {
+            DBUtil.safeClose(stm);
+            DBUtil.safeClose(conn);
+        }
+    }
+
+    public void deleteSpot(String spot) {
+        PreparedStatement stm = null;
+        try {
+            conn = DBUtil.connectDB();
+            stm = conn.prepareStatement("DELETE FROM scenic_spot.spots WHERE name=?");
+            stm.setString(1, spot);
+            stm.executeUpdate();
+            DBUtil.safeClose(stm);
+
+            stm = conn.prepareStatement("DELETE FROM scenic_spot.arcs WHERE (fromSpot = ? OR toSpot = ?)");
+            stm.setString(1, spot);
+            stm.setString(2, spot);
+            stm.executeUpdate();
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.out.println("GraphDao: 删除景点失败");
+        } finally {
+            DBUtil.safeClose(stm);
+            DBUtil.safeClose(conn);
+        }
+    }
 }

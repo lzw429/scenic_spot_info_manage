@@ -9,7 +9,7 @@
 <html lang="zh-cmn-Hans">
 <head>
     <%@ include file="header.jsp" %>
-    <title>登录 - 景区信息管理</title>
+    <title>登录 - 智慧景区</title>
     <script type="text/javascript">
         function changeimg() {
             var myImg = document.getElementById("code");

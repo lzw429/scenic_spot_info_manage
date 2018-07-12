@@ -9,7 +9,7 @@
 <html>
 <head>
     <%@ include file="header.jsp" %>
-    <title>景区信息管理系统</title>
+    <title>管理 - 智慧景区</title>
 </head>
 <body>
 <!-- Navbar goes here -->
@@ -29,6 +29,12 @@
             </li>
             <li class="waves-effect waves-light"><a href="#addPathModal" class=" modal-trigger"><i
                     class="material-icons">add_circle_outline</i>添加路线</a>
+            </li>
+            <li class="waves-effect waves-light"><a href="#deleteSpotModal" class="modal-trigger"><i
+                    class="material-icons">remove_circle_outline</i>删除景点</a>
+            </li>
+            <li class="waves-effect waves-light"><a href="#deletePathModal" class=" modal-trigger"><i
+                    class="material-icons">remove_circle_outline</i>删除路线</a>
             </li>
             <li class="waves-effect waves-light"><a href="#shortestPathModal" class="modal-trigger"><i
                     class="material-icons">navigation</i>最短路线规划</a>
@@ -78,6 +84,38 @@
         <div class="modal-footer"> <!--模态框底部-->
             <a href="#!" class="modal-close waves-effect waves-green btn-flat" id="addPathSubmit"
                onclick="addPath()">确定</a>
+        </div>
+    </div>
+
+    <div id="deleteSpotModal" class="modal bottom-sheet"> <!-- 删除景点 模态框-->
+        <div class="modal-content"> <!--模态框内容-->
+            <h4>删除景点</h4>
+            <div class="input-field col s3">
+                <input id="deleteSpotName" type="text" class="validate">
+                <label for="deleteSpotName">名称</label>
+            </div>
+        </div>
+        <div class="modal-footer"> <!--模态框底部-->
+            <a href="#!" class="modal-close waves-effect waves-green btn-flat" id="deleteSpotSubmit"
+               onclick="deleteSpot()">确定</a>
+        </div>
+    </div>
+
+    <div id="deletePathModal" class="modal bottom-sheet"> <!-- 删除路线 模态框-->
+        <div class="modal-content"> <!--模态框内容-->
+            <h4>删除路线</h4>
+            <div class="input-field col s3">
+                <input id="deleteStartSpot" type="text" class="validate">
+                <label for="deleteStartSpot">景点1名称</label>
+            </div>
+            <div class="input-field col s3">
+                <input id="deleteEndSpot" type="text" class="validate">
+                <label for="deleteEndSpot">景点2名称</label>
+            </div>
+        </div>
+        <div class="modal-footer"> <!--模态框底部-->
+            <a href="#!" class="modal-close waves-effect waves-green btn-flat" id="deletePathSubmit"
+               onclick="deletePath()">确定</a>
         </div>
     </div>
 
@@ -161,6 +199,10 @@
         });
 
         function addSpot() {
+            if ($('#spotName').val() === '') {
+                M.toast({html: '请输入景点名称'});
+                return;
+            }
             $.post('/addspot', {
                 spotName: $('#spotName').val(),
                 spotIntro: $('#spotIntro').val(),
@@ -175,6 +217,10 @@
         }
 
         function addPath() {
+            if ($('#spot1name').val() === '' || $('#spot2name').val() === '' || $('#distance').val() === '') {
+                M.toast({html: '请输入路线信息'});
+                return;
+            }
             $.post('/addpath', {
                 spot1name: $('#spot1name').val(),
                 spot2name: $('#spot2name').val(),
@@ -240,6 +286,40 @@
             }, function (responseText) {
                 M.toast({html: '设置成功'});
                 $('#announcementTextarea').val('');
+            }).fail(function () {
+                M.toast({html: '操作异常'});
+            });
+        }
+
+        function deleteSpot() {
+            if ($('#deleteSpotName').val() === "") {
+                M.toast({html: '请输入景点'});
+                return;
+            }
+            $.post('/deletespot', {
+                spotName: $('#deleteSpotName').val()
+            }, function () {
+                M.toast({html: '删除成功'});
+                requestGraph();
+                $('#deleteSpotName').val();
+            }).fail(function () {
+                M.toast({html: '操作异常'});
+            });
+        }
+
+        function deletePath() {
+            if ($('#deleteStartSpot').val() === "" || $('#deleteEndSpot').val() === "") {
+                M.toast({html: '请输入路线'});
+                return;
+            }
+            $.post('/deletepath', {
+                spot1name: $('#deleteStartSpot').val(),
+                spot2name: $('#deleteEndSpot').val()
+            }, function () {
+                M.toast({html: '删除成功'});
+                requestGraph();
+                $('#deleteStartSpot').val('');
+                $('#deleteEndSpot').val('');
             }).fail(function (response) {
                 M.toast({html: '操作异常'});
             });

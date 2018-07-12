@@ -191,7 +191,7 @@ public class ManageSystem {
         return null;
     }
 
-    private void deleteArc(String VNodeName1, String VNodeName2) {
+    public static void deleteArc(String VNodeName1, String VNodeName2) {
         if (arcs.get(VNodeName1).isEmpty()) return;
         arcs.get(VNodeName1).removeIf(arcNode -> arcNode.getTo().equals(VNodeName2));
         if (arcs.get(VNodeName2).isEmpty()) return;
@@ -209,10 +209,17 @@ public class ManageSystem {
         }
     }
 
-    private void deleteSpot(String VNodeName) {
-        if (spots.containsKey(VNodeName))
+    public static void deleteSpot(String VNodeName) {
+        if (spots.containsKey(VNodeName)) {
             spots.remove(VNodeName);
-        else System.out.println("[信息]该景点不存在");
+            arcs.remove(VNodeName);
+            for (Map.Entry<String, List<ArcNode>> entry : arcs.entrySet()) {
+                for (ArcNode arcNode : entry.getValue()) {
+                    if (arcNode.getTo().equals(VNodeName))
+                        entry.getValue().remove(arcNode);
+                }
+            }
+        } else System.out.println("[信息]该景点不存在");
     }
 
     private static int getDistance(String name1, String name2) {
@@ -248,7 +255,7 @@ public class ManageSystem {
         System.out.println("请输入删除景点名称：");
         Scanner sc = new Scanner(System.in);
         String name = sc.next();
-        this.deleteSpot(name);
+        deleteSpot(name);
     }
 
     private void AddArc() { // 添加路线
@@ -267,7 +274,7 @@ public class ManageSystem {
         Scanner sc = new Scanner(System.in);
         String line = sc.nextLine();
         String[] arcStr = line.split(" ");
-        this.deleteArc(arcStr[0], arcStr[1]);
+        deleteArc(arcStr[0], arcStr[1]);
     }
 
     private void ShortestPath() {
@@ -285,13 +292,13 @@ public class ManageSystem {
         if (spots.get(arcStr[0]) == null || spots.get(arcStr[1]) == null) {
             throw new IllegalArgumentException("[错误]未找到景点");
         }
-        int shortestDist = this.MiniDistance_Dijkstra(arcStr[0], arcStr[1], shortestPath_Dij);
+        int shortestDist = MiniDistance_Dijkstra(arcStr[0], arcStr[1], shortestPath_Dij);
         System.out.println("Dijkstra 算法：");
         System.out.println("最短距离：" + shortestDist);
         System.out.println("最短路径：");
         printShortestPath(shortestPath_Dij);
 
-        shortestDist = this.MiniDistance_FloydWarshall(arcStr[0], arcStr[1], shortestPath_Floyd);
+        shortestDist = MiniDistance_FloydWarshall(arcStr[0], arcStr[1], shortestPath_Floyd);
         System.out.println("FloydWarshall 算法：");
         System.out.println("最短距离：" + shortestDist);
         System.out.println("最短路径：");
